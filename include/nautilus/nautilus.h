@@ -34,6 +34,11 @@
 extern "C" {
 #endif
 
+/** START DO_NOT_MERGE for Syntax checking tools */
+#define NAUT_CONFIG_MAX_CPUS 255
+#define NAUT_CONFIG_MAX_IOAPICS 255
+/** END DO_NOT_MERGE  */
+  
 #define DEBUG_PRINT(fmt, args...)   nk_vc_log_wrap("CPU %d: DEBUG: " fmt, my_cpu_id(),##args)
 #define ERROR_PRINT(fmt, args...)   nk_vc_log_wrap("CPU %d: ERROR at %s(%lu): " fmt, my_cpu_id(),  __FILE__, __LINE__, ##args)
 #define WARN_PRINT(fmt, args...)    nk_vc_log_wrap("CPU %d: WARNING: " fmt, my_cpu_id(), ##args)
@@ -71,6 +76,7 @@ struct nk_int_info {
 
     struct irq_mapping irq_map[256];
 };
+
 
 struct hpet_dev;
 struct nk_locality_info;
@@ -125,8 +131,10 @@ nk_get_nautilus_info (void)
 #include <arch/hrt/main.h>
 #elif defined NAUT_CONFIG_X86_64_HOST
 #include <arch/x64/main.h>
-#else
-#error "Unsupported architecture"
+/** DO_NOT_MERGE */
+  //#else
+  //#error "Unsupported architecture"
+/** END DO_NOT_MERGE */
 #endif
 
 #ifdef __cplusplus
