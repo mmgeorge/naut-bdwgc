@@ -26,7 +26,7 @@
 
 
 void 
-main (unsigned long mbd, unsigned long magic) 
+nmain (unsigned long mbd, unsigned long magic) 
 {
     init(mbd, magic);
 }

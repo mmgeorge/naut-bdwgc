@@ -31,13 +31,13 @@
  * only used if this is an HRT 
  */
 void 
-main (unsigned long mbd, 
+nmain (unsigned long mbd, 
       unsigned long magic, 
       unsigned long mycpuid, 
       unsigned long apicid)
 
 {
-    if (mb_is_hrt_environ(mbd)) {
+  if (mb_is_hrt_environ(mbd)) {
 
         if (mycpuid == 0) {
             hrt_bsp_init(mbd, magic, mycpuid);

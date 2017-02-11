@@ -1,4 +1,4 @@
-#ifndef __INIT_H__
+#ifndef __INIT_H_
 #define __INIT_H_
 
 

@@ -84,7 +84,7 @@ hdr_end:
     movq %rax, %rsi
 
     /* multiboot info is still in rdi and rsi */
-    movabs $main, %rax
+    movabs $nmain, %rax
     callq *%rax
 
     /* shouldn't get here */

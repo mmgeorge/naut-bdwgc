@@ -1,3 +1,4 @@
+
 /* 
  * This file is part of the Nautilus AeroKernel developed
  * by the Hobbes and V3VEE Projects with funding from the 
@@ -35,8 +36,8 @@ extern "C" {
 #endif
 
 /** START DO_NOT_MERGE for Syntax checking tools */
-#define NAUT_CONFIG_MAX_CPUS 255
-#define NAUT_CONFIG_MAX_IOAPICS 255
+//#define NAUT_CONFIG_MAX_CPUS 255
+//#define NAUT_CONFIG_MAX_IOAPICS 255
 /** END DO_NOT_MERGE  */
   
 #define DEBUG_PRINT(fmt, args...)   nk_vc_log_wrap("CPU %d: DEBUG: " fmt, my_cpu_id(),##args)

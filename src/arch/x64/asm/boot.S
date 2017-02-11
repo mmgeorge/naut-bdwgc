@@ -99,7 +99,7 @@ hdr_end:
     movq $boot_stack_end, %rsp
 
     /* multiboot info is still in rdi and rsi */
-    movq $main, %rax
+    movq $nmain, %rax
     callq *%rax
 
     /* shouldn't get here */

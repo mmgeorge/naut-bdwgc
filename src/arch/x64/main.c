@@ -30,9 +30,9 @@
  * only used if this is an HRT 
  */
 void 
-main (unsigned long mbd, 
+nmain (unsigned long mbd, 
       unsigned long magic)
 
 {
-    init(mbd, magic);
+      init(mbd, magic);
 }

@@ -75,7 +75,7 @@ hdr_end:
     call paging_setup
 
     /* multiboot info is still in rdi and rsi */
-    movq $main, %rax
+    movq $nmain, %rax
 
     movabsq $0x007a7a70, %r14
     callq .tmp

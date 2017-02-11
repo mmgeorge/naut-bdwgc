@@ -469,7 +469,7 @@ static int handle_benchmarks(char * buf)
 {
     extern void run_benchmarks();
     
-    run_benchmarks();
+    //    run_benchmarks();
 
     return 0;
 }
