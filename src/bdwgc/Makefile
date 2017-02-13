@@ -1,5 +1,8 @@
 CFLAGS += -Isrc/bdwgc/include \
 	-DNAUT \
+	-U__linux__ \
+	-U__GNU__ \
+	-U__GLIBC__ \
 	-DNO_CLOCK \
 	-DSMALL_CONFIG \
 	-DGC_DISABLE_INCREMENTAL \

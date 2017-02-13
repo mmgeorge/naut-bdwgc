@@ -2282,6 +2282,8 @@
 
 /** Nautilus-x86_64 */
 #   ifdef NAUT
+#       undef DGUX
+#       undef UNIX_LIKE
 #       undef DYNAMIC_LOADING
 #       undef STACKBOTTOM
 #       undef HEURISTIC1
@@ -2289,6 +2291,7 @@
 #       undef PROC_VDB
 #       undef MPROTECT_VDB
 #       define STRTOULL simple_strtoull
+#       define GETPAGESIZE getpagesize()
 #   endif 
 # endif /* X86_64 */
 
@@ -2436,7 +2439,9 @@
     || defined(OPENBSD) || defined(NETBSD) || defined(FREEBSD) \
     || defined(DGUX) || defined(BSD) || defined(HURD) \
     || defined(AIX) || defined(DARWIN) || defined(OSF1)
-# define UNIX_LIKE      /* Basic Unix-like system calls work.   */
+# ifndef NAUT
+#   define UNIX_LIKE      /* Basic Unix-like system calls work.   */
+# endif 
 #endif
 
 #if CPP_WORDSZ != 32 && CPP_WORDSZ != 64

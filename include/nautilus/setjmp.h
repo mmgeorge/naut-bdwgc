@@ -23,6 +23,7 @@
 #ifndef __SETJMP_H__
 #define __SETJMP_H__
 
+#include <nautilus/naut_types.h>
 
 /* this is making a 64-bit assumption */
 typedef uint64_t __jmp_buf[8];

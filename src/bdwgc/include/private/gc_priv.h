@@ -46,10 +46,14 @@
 # include "../gc.h"
 #endif
 
-#include <stdlib.h>
+#if !defined(NAUT)
+# include <stdlib.h>
+#endif 
 #if !defined(sony_news)
 # include <stddef.h>
 #endif
+
+#undef DGUX
 
 #ifdef DGUX
 # include <sys/types.h>
@@ -2281,6 +2285,13 @@ GC_INNER ptr_t GC_store_debug_info(ptr_t p, word sz, const char *str,
 # define SETJMP(env) sigsetjmp(env, 1)
 # define LONGJMP(env, val) siglongjmp(env, val)
 # define JMP_BUF sigjmp_buf
+
+#elif defined(NAUT)
+# include <nautilus/setjmp.h>
+# define SETJMP(env) setjmp(env)
+# define LONGJMP(env, val) longjmp(env, val)
+# define JMP_BUF jmp_buf
+
 #else
 # ifdef ECOS
 #   define SETJMP(env)  hal_setjmp(env)

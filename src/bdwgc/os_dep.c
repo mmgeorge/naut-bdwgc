@@ -47,11 +47,15 @@
 #endif
 
 #if !defined(OS2) && !defined(PCR) && !defined(AMIGA) && !defined(MACOS) \
-    && !defined(MSWINCE) && !defined(__CC_ARM)
+  && !defined(MSWINCE) && !defined(__CC_ARM) && !defined(NAUT)
 # include <sys/types.h>
 # if !defined(MSWIN32)
 #   include <unistd.h>
 # endif
+#endif
+
+#ifdef NAUT
+# include <nautilus/naut_types.h>
 #endif
 
 #include <stdio.h>

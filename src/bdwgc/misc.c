@@ -15,9 +15,12 @@
 
 #include "private/gc_pmark.h"
 
-#include <stdio.h>
-#include <limits.h>
-#include <stdarg.h>
+#if !defined(NAUT)
+# include <stdio.h>
+#endif
+
+# include <limits.h>
+# include <stdarg.h>
 
 #ifndef MSWINCE
 # include <signal.h>
