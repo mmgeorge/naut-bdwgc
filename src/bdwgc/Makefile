@@ -1,0 +1,32 @@
+CFLAGS += -Isrc/bdwgc/include \
+	-DNAUT \
+	-DNO_CLOCK \
+	-DSMALL_CONFIG \
+	-DGC_DISABLE_INCREMENTAL \
+	-DNO_GETCONTEXT
+obj-y += allchblk.o \
+	alloc.o \
+	backgraph.o \
+	blacklst.o \
+	checksums.o \
+	dbg_mlc.o \
+	finalize.o \
+	gc_dlopen.o \
+	gcj_mlc.o \
+	headers.o \
+	mach_dep.o \
+	malloc.o \
+	mallocx.o \
+	mark.o \
+	mark_rts.o \
+	misc.o \
+	new_hblk.o \
+	obj_map.o \
+	os_dep.o \
+	ptr_chck.o \
+	reclaim.o \
+	specific.o \
+	stubborn.o \
+	thread_local_alloc.o \
+	typd_mlc.o \
+	libatomic_ops/
