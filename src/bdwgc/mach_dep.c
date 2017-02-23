@@ -14,8 +14,12 @@
 
 #include "private/gc_priv.h"
 
-#include <stdio.h>
-#include <setjmp.h>
+#ifdef NAUT
+# include <nautilus/setjmp.h>
+#else
+# include <stdio.h>
+# include <setjmp.h>
+#endif
 
 #if defined(OS2) || defined(CX_UX) || defined(__CC_ARM)
 # define _setjmp(b) setjmp(b)

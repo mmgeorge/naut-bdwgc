@@ -511,6 +511,11 @@
 #    define mach_type_known
 # endif
 
+# if defined(NAUT)
+#    define X86_64
+#    define mach_type_known
+# endif
+
 /* Feel free to add more clauses here */
 
 /* Or manually define the machine type here.  A machine type is         */
@@ -2282,6 +2287,11 @@
 
 /** Nautilus-x86_64 */
 #   ifdef NAUT
+#       undef LINUX
+#       undef USE_MMAP
+#       undef USE_MUNMAP
+#       undef MMAP_SUPPORTED
+#       undef ADD_HEAP_GUARD_PAGES
 #       undef DGUX
 #       undef UNIX_LIKE
 #       undef DYNAMIC_LOADING
@@ -2289,9 +2299,24 @@
 #       undef HEURISTIC1
 #       undef HEURISTIC2
 #       undef PROC_VDB
+#       undef LINUX_STACKBOTTOM
+#       undef FIND_LEAK
 #       undef MPROTECT_VDB
+#       undef NEED_FIND_LIMIT
+#       define MACH_TYPE "NAUTILUS"
+#       define OS_TYPE "NAUTILUS"
+//#       define CPP_WORDSZ 64
+#       define ALIGNMENT 8
+#       define DATASTART 0  //GC_SysVGetDataStart
+//#       define SEARCH_FOR_DATA_START  // compute DATASTART by walking backwards from _end
+        //#       define DATAEND end
+#       define DATAEND 0
+#       define STACKBOTTOM 0
+#       define GC_READ_ENV_FILE
+#       define NO_GETENV
 #       define STRTOULL simple_strtoull
 #       define GETPAGESIZE getpagesize()
+#       define sbrk STUB
 #   endif 
 # endif /* X86_64 */
 
@@ -2302,7 +2327,7 @@
 #   ifdef LINUX
 #       define OS_TYPE "LINUX"
 #       define LINUX_STACKBOTTOM
-#       define MPROTECT_VDB
+//#       define MPROTECT_VDB
 #       ifdef __ELF__
 #            define DYNAMIC_LOADING
 #            include <features.h>
@@ -2439,9 +2464,7 @@
     || defined(OPENBSD) || defined(NETBSD) || defined(FREEBSD) \
     || defined(DGUX) || defined(BSD) || defined(HURD) \
     || defined(AIX) || defined(DARWIN) || defined(OSF1)
-# ifndef NAUT
 #   define UNIX_LIKE      /* Basic Unix-like system calls work.   */
-# endif 
 #endif
 
 #if CPP_WORDSZ != 32 && CPP_WORDSZ != 64

@@ -56,9 +56,11 @@
 
 #ifdef NAUT
 # include <nautilus/naut_types.h>
+# include <nautilus/mm.h>
+#else 
+# include <stdio.h>
 #endif
 
-#include <stdio.h>
 #if defined(MSWINCE) || defined(SN_TARGET_PS3)
 # define SIGSEGV 0 /* value is irrelevant */
 #else
@@ -831,7 +833,6 @@ GC_INNER word GC_page_size = 0;
 # endif /* AMIGA */
 
 # if defined(NEED_FIND_LIMIT) || defined(UNIX_LIKE)
-
     typedef void (*GC_fault_handler_t)(int);
 
 #   if defined(SUNOS5SIGS) || defined(IRIX5) || defined(OSF1) \
@@ -1429,7 +1430,7 @@ GC_INNER word GC_page_size = 0;
 /* with SunOS dynamic loading), or GC_mark_roots needs to check for     */
 /* them (as we do with PCR).  Called with allocator lock held.          */
 # ifdef OS2
-
+#include<signal.h>
 void GC_register_data_segments(void)
 {
     PTIB ptib;
@@ -1442,7 +1443,8 @@ void GC_register_data_segments(void)
     struct e32_exe hdr386;      /* Real header for my executable */
     struct o32_obj seg;         /* Current segment */
     int nsegs;
-
+    /** tmp */
+#error dd
 
     if (DosGetInfoBlocks(&ptib, &ppib) != NO_ERROR) {
         ABORT("DosGetInfoBlocks failed");

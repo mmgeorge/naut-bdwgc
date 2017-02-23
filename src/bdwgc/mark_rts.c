@@ -14,7 +14,9 @@
 
 #include "private/gc_priv.h"
 
-#include <stdio.h>
+#ifndef NAUT
+# include <stdio.h>
+#endif
 
 /* Data structure for list of root sets.                                */
 /* We keep a hash table, so that we can filter out duplicate additions. */
@@ -155,7 +157,6 @@ GC_API void GC_CALL GC_add_roots(void *b, void *e)
 void GC_add_roots_inner(ptr_t b, ptr_t e, GC_bool tmp)
 {
     struct roots * old;
-
     GC_ASSERT(b <= e);
     b = (ptr_t)(((word)b + (sizeof(word) - 1)) & ~(sizeof(word) - 1));
                                         /* round b up to word boundary */

@@ -15,8 +15,10 @@
 
 #include "private/gc_priv.h"
 
-#include <stdio.h>
-#include <string.h>
+#ifndef NAUT
+# include <stdio.h>
+# include <string.h>
+#endif
 
 /* Allocate reclaim list for kind:      */
 /* Return TRUE on success               */

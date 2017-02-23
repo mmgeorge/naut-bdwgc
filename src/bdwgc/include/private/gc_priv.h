@@ -2291,6 +2291,7 @@ GC_INNER ptr_t GC_store_debug_info(ptr_t p, word sz, const char *str,
 # define SETJMP(env) setjmp(env)
 # define LONGJMP(env, val) longjmp(env, val)
 # define JMP_BUF jmp_buf
+  extern JMP_BUF GC_jmp_buf;
 
 #else
 # ifdef ECOS
@@ -2301,7 +2302,7 @@ GC_INNER ptr_t GC_store_debug_info(ptr_t p, word sz, const char *str,
 # define LONGJMP(env, val) longjmp(env, val)
 # define JMP_BUF jmp_buf
 #endif /* !UNIX_LIKE */
-
+extern JMP_BUF GC_jmp_buf;
 /* Do we need the GC_find_limit machinery to find the end of a  */
 /* data segment.                                                */
 #if defined(HEURISTIC2) || defined(SEARCH_FOR_DATA_START)

@@ -15,7 +15,7 @@
 
 #include "private/gc_pmark.h"
 
-#if !defined(NAUT)
+#ifndef NAUT
 # include <stdio.h>
 #endif
 
@@ -1059,7 +1059,9 @@ GC_API void GC_CALL GC_init(void)
     if (GC_find_leak) {
       /* This is to give us at least one chance to detect leaks.        */
       /* This may report some very benign leaks, but ...                */
+      #ifndef NAUT
       atexit(GC_exit_check);
+      #endif
     }
 
     /* The rest of this again assumes we don't really hold      */
@@ -1270,7 +1272,7 @@ GC_API void GC_CALL GC_enable_incremental(void)
 # define WRITE(f, buf, len) (GC_set_files(), GC_write(f, buf, len))
 
 #else
-# if !defined(AMIGA) && !defined(__CC_ARM)
+# if !defined(AMIGA) && !defined(__CC_ARM) && !defined(NAUT)
 #   include <unistd.h>
 # endif
 

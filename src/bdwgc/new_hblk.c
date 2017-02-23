@@ -21,7 +21,9 @@
  *      void GC_new_hblk(size)
  */
 
-#include <stdio.h>
+#ifndef NAUT
+# include <stdio.h>
+#endif
 
 #ifndef SMALL_CONFIG
   /* Build a free list for size 2 (words) cleared objects inside        */

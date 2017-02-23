@@ -426,6 +426,14 @@ strtoi (const char * nptr, char ** endptr)
     return ret;
 }
 
+
+long int
+atol (const char *nptr)
+{
+  return strtol (nptr, (char **) NULL, 10); 
+}
+
+
 extern long simple_strtol(const char*, char**, unsigned int);
 long 
 strtol (const char * str, char ** endptr, int base)

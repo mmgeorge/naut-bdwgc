@@ -17,11 +17,15 @@
 
 #include "private/gc_priv.h"
 
-#include <stdio.h>
-#if !defined(MACOS) && !defined(MSWINCE)
-# include <signal.h>
-# if !defined(__CC_ARM)
-#   include <sys/types.h>
+#ifdef NAUT
+# include <nautilus/naut_types.h>
+#else /** !NAUT */
+# include <stdio.h>
+# if !defined(MACOS) && !defined(MSWINCE)
+#   include <signal.h>
+#   if !defined(__CC_ARM) && !defined(NAUT)
+#     include <sys/types.h>
+#   endif
 # endif
 #endif
 

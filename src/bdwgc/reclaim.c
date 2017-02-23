@@ -16,7 +16,9 @@
 
 #include "private/gc_priv.h"
 
-#include <stdio.h>
+#ifndef NAUT
+# include <stdio.h>
+#endif
 
 GC_INNER signed_word GC_bytes_found = 0;
                         /* Number of bytes of memory reclaimed     */

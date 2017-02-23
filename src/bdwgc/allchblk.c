@@ -16,7 +16,9 @@
 
 #include "private/gc_priv.h"
 
-#include <stdio.h>
+#ifndef NAUT
+# include <stdio.h>
+#endif
 
 #ifdef GC_USE_ENTIRE_HEAP
   int GC_use_entire_heap = TRUE;

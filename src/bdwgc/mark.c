@@ -16,7 +16,10 @@
 
 #include "private/gc_pmark.h"
 
-#include <stdio.h>
+
+#ifndef NAUT
+# include <stdio.h>
+#endif
 
 #if defined(MSWIN32) && defined(__GNUC__)
 # include <excpt.h>
