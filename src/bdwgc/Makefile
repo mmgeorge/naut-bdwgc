@@ -34,4 +34,5 @@ obj-y += allchblk.o \
 	stubborn.o \
 	thread_local_alloc.o \
 	typd_mlc.o \
-	libatomic_ops/
+	libatomic_ops/ \
+	tests/ 

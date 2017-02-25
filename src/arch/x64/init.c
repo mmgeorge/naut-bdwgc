@@ -89,6 +89,10 @@
 #include <dev/vesa.h>
 #endif
 
+// TEMP
+#include "../../../src/bdwgc/include/test.h"
+
+
 extern spinlock_t printk_lock;
 
 
@@ -382,6 +386,8 @@ init (unsigned long mbd,
 #endif
 #endif
 
+    bdwgc_runtests();
+    
     launch_vmm_environment();
 
     nk_launch_shell("root-shell",0);

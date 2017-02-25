@@ -35,18 +35,23 @@
         /* Not respected by PCR test. */
 #endif
 
-# if defined(mips) && defined(SYSTYPE_BSD43)
+#if defined(mips) && defined(SYSTYPE_BSD43)
     /* MIPS RISCOS 4 */
-# else
+#elif !defined(NAUT)
 #   include <stdlib.h>
-# endif
+#endif
+
+#ifndef NAUT
 # include <stdio.h>
+#endif
+
 # if defined(_WIN32_WCE) && !defined(__GNUC__)
 #   include <winbase.h>
 /* #   define assert ASSERT */
 # else
 #   include <assert.h>        /* Not normally used, but handy for debugging. */
 # endif
+
 
 # include "gc_typed.h"
 # include "private/gc_priv.h"   /* For output, locking, MIN_WORDS,      */
@@ -80,6 +85,10 @@
 #   include "th/PCR_ThCrSec.h"
 #   include "th/PCR_Th.h"
 #   define GC_printf printf
+# endif
+
+# ifdef NAUT
+#   define GC_printf printk
 # endif
 
 # if defined(GC_PTHREADS)
@@ -1091,13 +1100,17 @@ void run_one_test(void)
     CLOCK_TYPE reverse_time;
     CLOCK_TYPE tree_time;
     unsigned long time_diff;
-
+    
 #   ifdef FIND_LEAK
         GC_printf(
               "This test program is not designed for leak detection mode\n");
         GC_printf("Expect lots of problems\n");
 #   endif
     GC_FREE(0);
+
+    //temp
+    printk("1115");
+
 #   ifndef DBG_HDRS_ALL
       collectable_count += 3;
       if ((GC_size(GC_malloc(7)) != 8 &&
@@ -1178,6 +1191,10 @@ void run_one_test(void)
             if (result % i != 0 || result == 0 || *(int *)result != 0) FAIL;
           }
         }
+
+        //temp
+        printk("1199");
+
 #     ifndef ALL_INTERIOR_POINTERS
 #      if defined(RS6000) || defined(POWERPC)
         if (!TEST_FAIL_COUNT(1))
@@ -1215,6 +1232,11 @@ void run_one_test(void)
       GC_REGISTER_DISPLACEMENT(sizeof(struct fake_vtable *));
       GC_init_gcj_malloc(0, (void *)(GC_word)fake_gcj_mark_proc);
 #   endif
+
+      //temp
+        printk("1240");
+
+#   ifndef NAUT
     /* Make sure that fn arguments are visible to the collector.        */
       uniq(
         GC_malloc(12), GC_malloc(12), GC_malloc(12),
@@ -1242,6 +1264,11 @@ void run_one_test(void)
           GC_log_printf("-------------Finished reverse_test at time %u (%p)\n",
                         (unsigned) time_diff, &start_time);
         }
+#   endif
+
+      //temp
+        printk("1273");
+        
 #   ifndef DBG_HDRS_ALL
       typed_test();
       if (print_stats) {
@@ -1251,7 +1278,11 @@ void run_one_test(void)
                       (unsigned) time_diff, &start_time);
       }
 #   endif /* DBG_HDRS_ALL */
-    tree_test();
+
+      //temp
+      printk("1286");
+
+      tree_test();
     if (print_stats) {
       GET_TIME(tree_time);
       time_diff = MS_TIME_DIFF(tree_time, start_time);
@@ -1283,6 +1314,19 @@ void run_one_test(void)
     if (print_stats)
       GC_log_printf("Finished %p\n", &start_time);
 }
+
+
+
+#ifdef NAUT
+
+int bdwgc_runtests()
+{
+  printk("Running bdwgc tests\n");
+  run_one_test();
+  return 0;
+}
+
+#endif
 
 #define NUMBER_ROUND_UP(v, bound) ((((v) + (bound) - 1) / (bound)) * (bound))
 
@@ -1480,7 +1524,7 @@ void GC_CALLBACK warn_proc(char *msg, GC_word p)
 #   endif
     run_one_test();
     check_heap_stats();
-#   ifndef MSWINCE
+#   if !defined(MSWINCE) && !defined(NAUT)
       fflush(stdout);
 #   endif
 #   ifdef LINT
@@ -1697,6 +1741,7 @@ void * thr_run_one_test(void * arg)
 #  define GC_free GC_debug_free
 #endif
 
+
 int main(void)
 {
     pthread_t th[NTHREADS];
@@ -1777,4 +1822,5 @@ int main(void)
 #   endif
     return(0);
 }
+
 #endif /* GC_PTHREADS */
