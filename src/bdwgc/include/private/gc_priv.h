@@ -387,7 +387,9 @@ typedef char * ptr_t;   /* A generic pointer to which we can add        */
 # endif
 
 # ifndef BCOPY_EXISTS
-#   include <string.h>
+#   ifndef NAUT
+#       include <string.h>
+#   endif
 #   define BCOPY(x,y,n) memcpy(y, x, (size_t)(n))
 #   define BZERO(x,n)  memset(x, 0, (size_t)(n))
 # else

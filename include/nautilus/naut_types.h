@@ -64,6 +64,25 @@ typedef char          sint8_t;
 typedef ulong_t addr_t;
 typedef uchar_t bool_t;
 
+typedef unsigned long uintptr_t;
+typedef long int        intptr_t;
+
+/* Types for `void *' pointers.  
+#if __WORDSIZE == 64
+# ifndef __intptr_t_defined
+  typedef long int        intptr_t;
+#  define __intptr_t_defined
+# endif
+  typedef unsigned long int   uintptr_t;
+#else
+# ifndef __intptr_t_defined
+  typedef int         intptr_t;
+#  define __intptr_t_defined
+# endif
+  typedef unsigned int        uintptr_t;
+#endif
+*/
+  
 //#define NULL ((void *)0)
 #ifndef NULL
 #define NULL 0

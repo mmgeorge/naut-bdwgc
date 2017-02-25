@@ -43,7 +43,7 @@
  */
 typedef long intmax_t;
 typedef unsigned long uintmax_t;
-typedef unsigned long uintptr_t;
+//typedef unsigned long uintptr_t; move to naut_types.h
 
 /* DHH */
 #define ASSERT(exp) \

@@ -39,6 +39,13 @@
 # define AO_USE_NANOSLEEP
 #endif
 
+
+#ifdef NAUT
+# include <nautilus/naut_types.h>
+# include <nautilus/timer.h>
+# define AO_USE_NO_SIGNALS
+#endif
+
 #if defined(AO_USE_WIN32_PTHREADS) && !defined(AO_USE_NO_SIGNALS)
 # define AO_USE_NO_SIGNALS
 #endif
@@ -117,6 +124,7 @@ void AO_spin(int n)
   AO_store(&dummy, j);
 }
 
+
 void AO_pause(int n)
 {
   if (n < 12)
@@ -130,6 +138,8 @@ void AO_pause(int n)
         nanosleep(&ts, 0);
 #     elif defined(AO_USE_WIN32_PTHREADS)
         Sleep(n > 28 ? 100 : n < 22 ? 1 : 1 << (n - 22)); /* in millis */
+#     elif defined(NAUT)
+        nk_sleep(n > 28 ? 100000 * 1000 : 1 << (n - 2)); 
 #     else
         struct timeval tv;
         /* Short async-signal-safe sleep. */

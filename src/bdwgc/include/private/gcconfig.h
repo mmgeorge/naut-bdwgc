@@ -2316,7 +2316,7 @@
 #       define NO_GETENV
 #       define STRTOULL simple_strtoull
 #       define GETPAGESIZE getpagesize()
-#       define sbrk STUB
+#       define sbrk sbrk
 #   endif 
 # endif /* X86_64 */
 

@@ -529,3 +529,9 @@ free (void * addr)
     block_hash_free_entry(hdr);
 }
 
+
+void *
+sbrk (intptr_t delta) {
+  return (void*)0; 
+}
+

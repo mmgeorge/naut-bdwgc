@@ -7,7 +7,7 @@
  */
 
 #if ((defined(__x86_64__) && __GNUC__ >= 4) || defined(_WIN64)) \
-    && !defined(__ILP32__)
+  && !defined(__ILP32__) && !defined(NAUT)
 # include <xmmintrin.h>
   typedef __m128 double_ptr_storage;
 #elif defined(_WIN32) && !defined(__GNUC__)
