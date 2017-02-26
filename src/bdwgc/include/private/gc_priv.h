@@ -2001,6 +2001,7 @@ void GC_print_static_roots(void);
 
 GC_API void GC_CALL GC_noop1(word);
 
+/*
 #ifndef GC_ATTR_FORMAT_PRINTF
 # if defined(__GNUC__) && __GNUC__ >= 3
 #   define GC_ATTR_FORMAT_PRINTF(spec_argnum, first_checked) \
@@ -2009,18 +2010,27 @@ GC_API void GC_CALL GC_noop1(word);
 #   define GC_ATTR_FORMAT_PRINTF(spec_argnum, first_checked)
 # endif
 #endif
-
+*/
+#ifdef NAUT // Use normal print functionality
+//# include<nautilus/printk.h>
+# define GC_printf(...) printf(__VA_ARGS__)
+# define GC_err_printf(...) GC_printf(__VA_ARGS__)
+# define GC_log_printf(...) GC_printf(__VA_ARGS__)
+#else 
 /* Logging and diagnostic output:       */
 GC_API_PRIV void GC_printf(const char * format, ...)
-                        GC_ATTR_FORMAT_PRINTF(1, 2);
-                        /* A version of printf that doesn't allocate,   */
-                        /* 1K total output length.                      */
-                        /* (We use sprintf.  Hopefully that doesn't     */
-                        /* allocate for long arguments.)                */
+  GC_ATTR_FORMAT_PRINTF(1, 2);
+/* A version of printf that doesn't allocate,   */
+/* 1K total output length.                      */
+/* (We use sprintf.  Hopefully that doesn't     */
+/* allocate for long arguments.)                */
 GC_API_PRIV void GC_err_printf(const char * format, ...)
-                        GC_ATTR_FORMAT_PRINTF(1, 2);
+  GC_ATTR_FORMAT_PRINTF(1, 2);
 GC_API_PRIV void GC_log_printf(const char * format, ...)
-                        GC_ATTR_FORMAT_PRINTF(1, 2);
+  GC_ATTR_FORMAT_PRINTF(1, 2);
+#endif
+
+
 void GC_err_puts(const char *s);
                         /* Write s to stderr, don't buffer, don't add   */
                         /* newlines, don't ...                          */

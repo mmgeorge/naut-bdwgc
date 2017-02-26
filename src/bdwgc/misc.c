@@ -1326,6 +1326,8 @@ GC_API void GC_CALL GC_enable_incremental(void)
 #   define vsnprintf _vsnprintf
 # endif
 #endif
+
+#ifndef NAUT
 /* A version of printf that is unlikely to call malloc, and is thus safer */
 /* to call from the collector in case malloc has been bound to GC_malloc. */
 /* Floating point arguments and formats should be avoided, since fp       */
@@ -1373,6 +1375,8 @@ void GC_log_printf(const char *format, ...)
     if (WRITE(GC_log, buf, strlen(buf)) < 0)
       ABORT("write to log failed");
 }
+#endif
+
 
 /* This is equivalent to GC_err_printf("%s",s). */
 void GC_err_puts(const char *s)
