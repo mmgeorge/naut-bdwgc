@@ -20,7 +20,12 @@
 #ifndef MSWINCE
 # include <errno.h>
 #endif
-#include <string.h>
+
+#ifndef NAUT
+# include <string.h>
+#else
+# include <nautilus/naut_string.h>
+#endif
 
 #ifndef SHORT_DBG_HDRS
   /* Check whether object with base pointer p has debugging info. */
@@ -777,6 +782,7 @@ GC_API void * GC_CALL GC_debug_malloc_uncollectable(size_t lb,
 
 GC_API void GC_CALL GC_debug_free(void * p)
 {
+  printk("ENTER GC_debug_free, %p\n", p);
     ptr_t base;
     if (0 == p) return;
 
@@ -788,7 +794,8 @@ GC_API void GC_CALL GC_debug_free(void * p)
     if ((ptr_t)p - (ptr_t)base != sizeof(oh)) {
       GC_err_printf(
                "GC_debug_free called on pointer %p w/o debugging info\n", p);
-    } else {
+    }
+    else {
 #     ifndef SHORT_DBG_HDRS
         ptr_t clobbered = GC_check_annotated_obj((oh *)base);
         word sz = GC_size(base);
@@ -829,7 +836,10 @@ GC_API void GC_CALL GC_debug_free(void * p)
         for (i = 0; i < obj_sz; ++i)
           ((word *)p)[i] = GC_FREED_MEM_MARKER;
         GC_ASSERT((word *)p + i == (word *)(base + hhdr -> hb_sz));
+        
       }
+
+      printf("EXIT GC_FREE\n");
     } /* !GC_find_leak */
 }
 

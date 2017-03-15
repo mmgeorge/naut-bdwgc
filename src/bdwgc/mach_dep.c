@@ -263,7 +263,8 @@ GC_INNER void GC_with_callee_saves_pushed(void (*fn)(ptr_t, void *),
             *i = 0;
         }
 #       if defined(MSWIN32) || defined(MSWINCE) || defined(UTS4) \
-           || defined(LINUX) || defined(EWS4800) || defined(RTEMS)
+           || defined(LINUX) || defined(EWS4800) || defined(RTEMS) \
+           || defined(NAUT)
           (void) setjmp(regs);
 #       else
           (void) _setjmp(regs);

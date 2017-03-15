@@ -38,7 +38,7 @@
 # include <windows.h>
 #endif
 
-#if defined(UNIX_LIKE) || defined(CYGWIN32)
+#if (defined(UNIX_LIKE) || defined(CYGWIN32)) && !defined(NAUT)
 # include <fcntl.h>
 # include <sys/types.h>
 # include <sys/stat.h>
@@ -612,7 +612,7 @@ STATIC void GC_exit_check(void)
    GC_gcollect();
 }
 
-#ifdef UNIX_LIKE
+#ifdef UNIX_LIKE 
   static void looping_handler(int sig)
   {
     GC_err_printf("Caught signal %d: looping in handler\n", sig);
@@ -641,9 +641,6 @@ STATIC void GC_exit_check(void)
   STATIC int GC_log = 2; /* stderr */
 #endif
 
-#ifdef NAUT
-#  include <nautilus/printk.h>
-#endif
 
 STATIC word GC_parse_mem_size_arg(const char *str)
 {
