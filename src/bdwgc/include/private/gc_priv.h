@@ -334,7 +334,14 @@ typedef char * ptr_t;   /* A generic pointer to which we can add        */
 # define CLOCK_TYPE DWORD
 # define GET_TIME(x) x = GetTickCount()
 # define MS_TIME_DIFF(a,b) ((long)((a)-(b)))
-#else /* !MSWIN32, !MSWINCE, !BSD_TIME */
+# elif NAUT
+
+// Stubs -> do nothing
+# define CLOCK_TYPE int
+# define GET_TIME(x) x = 0
+# define MS_TIME_DIFF(a,b) 0
+
+# else /* !MSWIN32, !MSWINCE, !BSD_TIME */
 # include <time.h>
 # if !defined(__STDC__) && defined(SPARC) && defined(SUNOS4)
     clock_t clock(void);        /* Not in time.h, where it belongs      */

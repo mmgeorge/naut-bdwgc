@@ -3,8 +3,8 @@
 #ifndef __BDWGC_TEST__
 #define __BDWGC_TEST__
 
+int bdwgc_runtests();
 
-int bdwgc_runtests(); 
-int bdwgc_test_setjmp();
+//int bdwgc_test_setjmp(); // platform diagnostic, not needed
 
 #endif

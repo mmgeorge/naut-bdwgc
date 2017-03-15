@@ -254,23 +254,37 @@ GC_INNER void GC_with_callee_saves_pushed(void (*fn)(ptr_t, void *),
         /* We're not sure whether he would like  */
         /* to be acknowledged for it or not.     */
         jmp_buf regs;
+          
+#       ifdef NAUT 
+
+        /* Nautilus version is modified to avoid compiler warnings */
+        for (unsigned i = 0; i < (sizeof(__jmp_buf)/sizeof(uint64_t)); ++i ) {
+          regs->__jmpbuf[i] = 0; 
+        }
+
+        (void) setjmp(regs);
+        
+#       else 
+
         register word * i = (word *) regs;
         register ptr_t lim = (ptr_t)(regs) + (sizeof regs);
 
-        /* Setjmp doesn't always clear all of the buffer.               */
-        /* That tends to preserve garbage.  Clear it.                   */
+        // Setjmp doesn't always clear all of the buffer.               
+        // That tends to preserve garbage.  Clear it.            
         for (; (char *)i < lim; i++) {
             *i = 0;
         }
-#       if defined(MSWIN32) || defined(MSWINCE) || defined(UTS4) \
-           || defined(LINUX) || defined(EWS4800) || defined(RTEMS) \
-           || defined(NAUT)
-          (void) setjmp(regs);
-#       else
-          (void) _setjmp(regs);
-          /* We don't want to mess with signals. According to   */
-          /* SUSV3, setjmp() may or may not save signal mask.   */
-          /* _setjmp won't, but is less portable.               */
+
+#         if defined(MSWIN32) || defined(MSWINCE) || defined(UTS4) \
+             || defined(LINUX) || defined(EWS4800) || defined(RTEMS) 
+          
+            (void) setjmp(regs);
+#         else
+            (void) _setjmp(regs);
+            /* We don't want to mess with signals. According to   */
+            /* SUSV3, setjmp() may or may not save signal mask.   */
+            /* _setjmp won't, but is less portable.               */
+#         endif
 #       endif
 #   endif /* !HAVE_PUSH_REGS ... */
     /* FIXME: context here is sometimes just zero.  At the moment the   */

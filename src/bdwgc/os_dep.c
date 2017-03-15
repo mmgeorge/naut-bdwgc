@@ -63,7 +63,7 @@
 
 #if defined(MSWINCE) || defined(SN_TARGET_PS3)
 # define SIGSEGV 0 /* value is irrelevant */
-#else
+#elif !defined(NAUT)
 # include <signal.h>
 #endif
 
@@ -2095,6 +2095,7 @@ STATIC ptr_t GC_unix_mmap_get_mem(word bytes)
   }
 #else /* !USE_MMAP */
 
+#ifndef NAUT 
 STATIC ptr_t GC_unix_sbrk_get_mem(word bytes)
 {
   ptr_t result;
@@ -2135,7 +2136,9 @@ STATIC ptr_t GC_unix_sbrk_get_mem(word bytes)
 # endif
   return(result);
 }
+#endif
 
+#ifndef NAUT
 ptr_t GC_unix_get_mem(word bytes)
 {
 # if defined(MMAP_SUPPORTED)
@@ -2157,6 +2160,7 @@ ptr_t GC_unix_get_mem(word bytes)
     return GC_unix_sbrk_get_mem(bytes);
 # endif
 }
+#endif
 
 #endif /* !USE_MMAP */
 

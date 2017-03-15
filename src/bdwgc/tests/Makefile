@@ -10,4 +10,4 @@ CFLAGS += -Isrc/bdwgc/include \
 	-DNO_GETCONTEXT \
 	-DNO_DEBUGGING
 obj-y += test.o \
-		setjmp_t.o
+#		setjmp_t.o

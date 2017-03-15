@@ -17,14 +17,15 @@
 
 #include "private/dbg_mlc.h"
 
-#ifndef MSWINCE
-# include <errno.h>
-#endif
 
-#ifndef NAUT
-# include <string.h>
-#else
+#ifdef NAUT
 # include <nautilus/naut_string.h>
+# include <nautilus/errno.h>
+#else
+#include <string.h>
+# ifndef MSWINCE && 
+#  include <errno.h>
+# endif
 #endif
 
 #ifndef SHORT_DBG_HDRS
@@ -679,8 +680,8 @@ GC_API char * GC_CALL GC_debug_strdup(const char *str, GC_EXTRA_PARAMS)
   lb = strlen(str) + 1;
   copy = GC_debug_malloc_atomic(lb, OPT_RA s, i);
   if (copy == NULL) {
-#   ifndef MSWINCE
-      errno = ENOMEM;
+# if !defined(MSWINCE) && !defined(NAUT)
+        errno = ENOMEM;
 #   endif
     return NULL;
   }
@@ -702,7 +703,7 @@ GC_API char * GC_CALL GC_debug_strndup(const char *str, size_t size,
     len = size;
   copy = GC_debug_malloc_atomic(len + 1, OPT_RA s, i);
   if (copy == NULL) {
-#   ifndef MSWINCE
+#   if !defined(MSWINCE) && !defined(NAUT)
       errno = ENOMEM;
 #   endif
     return NULL;

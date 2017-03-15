@@ -15,10 +15,8 @@
 
 #include "private/gc_pmark.h"
 
-#ifndef NAUT
-# include <stdio.h>
-#endif
 
+#ifndef NAUT
 # include <limits.h>
 # include <stdarg.h>
 
@@ -46,6 +44,8 @@
 
 #ifdef NONSTOP
 # include <floss.h>
+#endif
+
 #endif
 
 #ifdef THREADS
@@ -1275,7 +1275,7 @@ GC_API void GC_CALL GC_enable_incremental(void)
 
   STATIC int GC_write(int fd, const char *buf, size_t len)
   {
-#   if defined(ECOS) || defined(NOSYS)
+#   if defined(ECOS) || defined(NOSYS) || defined(NAUT)
 #     ifdef ECOS
         /* FIXME: This seems to be defined nowhere at present.  */
         /* _Jv_diag_write(buf, len); */

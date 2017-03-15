@@ -87,9 +87,6 @@
 #   define GC_printf printf
 # endif
 
-# ifdef NAUT
-#   define GC_printf printk
-# endif
 
 # if defined(GC_PTHREADS)
 #   include <pthread.h>
@@ -1307,7 +1304,7 @@ void run_one_test(void)
 
 
 #ifdef NAUT
-
+int main();
 int bdwgc_runtests()
 {
   printk("Running bdwgc tests\n");

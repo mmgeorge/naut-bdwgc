@@ -2108,6 +2108,7 @@
 #   endif
 # endif
 
+
 # ifdef X86_64
 #   define MACH_TYPE "X86_64"
 #   ifdef __ILP32__
@@ -2284,10 +2285,17 @@
 #       define GWW_VDB
 #       define DATAEND  /* not needed */
 #   endif
+
 /** Nautilus-x86_64 */
 #   ifdef NAUT
-extern void _data_start;
-extern void _data_end;
+
+// Reference linker symbols as char arrays to avoid compiler warning
+extern char _data_start[];
+extern char _data_end[];
+
+#       include <nautilus/printk.h>
+#       include <nautilus/libccompat.h>
+
 #       undef LINUX
 #       undef USE_MMAP
 #       undef USE_MUNMAP
@@ -2306,18 +2314,15 @@ extern void _data_end;
 #       undef NEED_FIND_LIMIT
 #       undef HAVE_BUILTIN_UNWIND_INIT
 #       define GC_ASSERTIONS
-//#       define USE_GENERIC_PUSH_REGS
-#       define MACH_TYPE "NAUTILUS"
 #       define OS_TYPE "NAUTILUS"
 #       define GETPAGESIZE() 4096
 #       define GC_DEBUG
 #       define ALIGNMENT 8
-#       define DATASTART &_data_start
-#       define DATAEND &_data_end
+#       define DATASTART (void *)&_data_start
+#       define DATAEND (void *)&_data_end
 #       define GC_READ_ENV_FILE
 #       define NO_GETENV
 #       define STRTOULL simple_strtoull
-//#       define GETPAGESIZE getpagesize()
 #   endif 
 # endif /* X86_64 */
 

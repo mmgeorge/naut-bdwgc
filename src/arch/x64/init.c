@@ -388,7 +388,6 @@ init (unsigned long mbd,
     //test_setlong();
     launch_vmm_environment();
 
-    bdwgc_test_setjmp();
     bdwgc_runtests();
 
     //nk_launch_shell("root-shell",0);

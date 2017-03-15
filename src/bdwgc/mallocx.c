@@ -23,19 +23,22 @@
  * executables.  We should probably break this up further.
  */
 
-#ifndef NAUT
+
+#ifdef NAUT
+# include <nautilus/errno.h>
+# include <nautilus/printk.h>
+#else 
 # include <stdio.h>
 # include <string.h>
-#endif
-
-#ifdef MSWINCE
-# ifndef WIN32_LEAN_AND_MEAN
-#   define WIN32_LEAN_AND_MEAN 1
+# ifdef MSWINCE
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN 1
+#  endif
+#  define NOSERVICE
+#  include <windows.h>
+# else
+#  include <errno.h>
 # endif
-# define NOSERVICE
-# include <windows.h>
-#else
-# include <errno.h>
 #endif
 
 /* Some externally visible but unadvertised variables to allow access to */
@@ -560,7 +563,7 @@ GC_API char * GC_CALL GC_strdup(const char *s)
   if (s == NULL) return NULL;
   lb = strlen(s) + 1;
   if ((copy = GC_malloc_atomic(lb)) == NULL) {
-#   ifndef MSWINCE
+#   if !defined(MSWINCE) && !defined(NAUT)
       errno = ENOMEM;
 #   endif
     return NULL;
@@ -582,7 +585,7 @@ GC_API char * GC_CALL GC_strndup(const char *str, size_t size)
     len = size;
   copy = GC_malloc_atomic(len + 1);
   if (copy == NULL) {
-#   ifndef MSWINCE
+#   if !defined(MSWINCE) && !defined(NAUT)
       errno = ENOMEM;
 #   endif
     return NULL;
