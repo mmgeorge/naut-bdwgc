@@ -71,9 +71,6 @@ void * mm_boot_alloc (ulong_t size);
 void * mm_boot_alloc_aligned (ulong_t size, ulong_t align);
 void mm_boot_free(void *addr, ulong_t size);
 
-
-void * sbrk(intptr_t delta);
-
 /* KMEM FUNCTIONS */
 
 struct kmem_data {

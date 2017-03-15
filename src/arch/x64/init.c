@@ -385,14 +385,15 @@ init (unsigned long mbd,
     nk_fs_ext2_attach("ramdisk0","rootfs", 1);
 #endif
 #endif
-
-    bdwgc_runtests();
-    
+    //test_setlong();
     launch_vmm_environment();
 
-    nk_launch_shell("root-shell",0);
+    bdwgc_test_setjmp();
+    bdwgc_runtests();
 
-    runtime_init();
+    //nk_launch_shell("root-shell",0);
+
+    //runtime_init();
 
     printk("Nautilus boot thread yielding (indefinitely)\n");
 

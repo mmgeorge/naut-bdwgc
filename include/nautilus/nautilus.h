@@ -24,8 +24,8 @@
 #ifndef __NAUTILUS_H__
 #define __NAUTILUS_H__
 
-#include <nautilus/percpu.h>
 #include <nautilus/printk.h>
+#include <nautilus/percpu.h>
 #include <dev/serial.h>
 #include <nautilus/naut_types.h>
 #include <nautilus/instrument.h>
@@ -35,11 +35,6 @@
 extern "C" {
 #endif
 
-/** START DO_NOT_MERGE for Syntax checking tools */
-//#define NAUT_CONFIG_MAX_CPUS 255
-//#define NAUT_CONFIG_MAX_IOAPICS 255
-/** END DO_NOT_MERGE  */
-  
 #define DEBUG_PRINT(fmt, args...)   nk_vc_log_wrap("CPU %d: DEBUG: " fmt, my_cpu_id(),##args)
 #define ERROR_PRINT(fmt, args...)   nk_vc_log_wrap("CPU %d: ERROR at %s(%lu): " fmt, my_cpu_id(),  __FILE__, __LINE__, ##args)
 #define WARN_PRINT(fmt, args...)    nk_vc_log_wrap("CPU %d: WARNING: " fmt, my_cpu_id(), ##args)

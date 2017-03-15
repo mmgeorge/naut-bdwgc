@@ -2284,9 +2284,10 @@
 #       define GWW_VDB
 #       define DATAEND  /* not needed */
 #   endif
-
 /** Nautilus-x86_64 */
 #   ifdef NAUT
+extern void _data_start;
+extern void _data_end;
 #       undef LINUX
 #       undef USE_MMAP
 #       undef USE_MUNMAP
@@ -2303,20 +2304,20 @@
 #       undef FIND_LEAK
 #       undef MPROTECT_VDB
 #       undef NEED_FIND_LIMIT
+#       undef HAVE_BUILTIN_UNWIND_INIT
+#       define GC_ASSERTIONS
+//#       define USE_GENERIC_PUSH_REGS
 #       define MACH_TYPE "NAUTILUS"
 #       define OS_TYPE "NAUTILUS"
-//#       define CPP_WORDSZ 64
+#       define GETPAGESIZE() 4096
+#       define GC_DEBUG
 #       define ALIGNMENT 8
-#       define DATASTART 0  //GC_SysVGetDataStart
-//#       define SEARCH_FOR_DATA_START  // compute DATASTART by walking backwards from _end
-        //#       define DATAEND end
-#       define DATAEND 0
-#       define STACKBOTTOM 0
+#       define DATASTART &_data_start
+#       define DATAEND &_data_end
 #       define GC_READ_ENV_FILE
 #       define NO_GETENV
 #       define STRTOULL simple_strtoull
-#       define GETPAGESIZE getpagesize()
-#       define sbrk sbrk
+//#       define GETPAGESIZE getpagesize()
 #   endif 
 # endif /* X86_64 */
 
@@ -2860,6 +2861,10 @@
 # elif defined(SN_TARGET_PS3)
     void *ps3_get_mem(size_t size);
 #   define GET_MEM(bytes) (struct hblk*)ps3_get_mem(bytes)
+# elif defined(NAUT)
+#   include <nautilus/mm.h>
+#   define GET_MEM(bytes) HBLKPTR(malloc((size_t)(bytes) + GC_page_size) \
+                                          + GC_page_size-1)
 # else
     ptr_t GC_unix_get_mem(GC_word bytes);
 #   define GET_MEM(bytes) (struct hblk *)GC_unix_get_mem(bytes)

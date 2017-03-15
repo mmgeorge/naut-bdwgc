@@ -1,3 +1,4 @@
+CFLAGS += -DNAUT_CONFIG_DEBUG_INFO
 obj-y += \
 	nautilus/ \
 	arch/ \

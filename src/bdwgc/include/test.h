@@ -5,6 +5,6 @@
 
 
 int bdwgc_runtests(); 
-
+int bdwgc_test_setjmp();
 
 #endif

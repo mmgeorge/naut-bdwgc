@@ -1311,7 +1311,7 @@ void run_one_test(void)
 int bdwgc_runtests()
 {
   printk("Running bdwgc tests\n");
-  run_one_test();
+  main();
   return 0;
 }
 

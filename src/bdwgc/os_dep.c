@@ -67,7 +67,7 @@
 # include <signal.h>
 #endif
 
-#if defined(UNIX_LIKE) || defined(CYGWIN32) || defined(NACL)
+#if (defined(UNIX_LIKE) || defined(CYGWIN32) || defined(NACL)) && !defined(NAUT)
 # include <fcntl.h>
 #endif
 
@@ -832,7 +832,7 @@ GC_INNER word GC_page_size = 0;
 #   define GET_MAIN_STACKBASE_SPECIAL
 # endif /* AMIGA */
 
-# if defined(NEED_FIND_LIMIT) || defined(UNIX_LIKE)
+# if (defined(NEED_FIND_LIMIT) || defined(UNIX_LIKE)) && !defined(NAUT)
     typedef void (*GC_fault_handler_t)(int);
 
 #   if defined(SUNOS5SIGS) || defined(IRIX5) || defined(OSF1) \
@@ -1156,7 +1156,10 @@ GC_INNER word GC_page_size = 0;
     /* single-threaded gclib (there is no -lpthread on Darwin). */
 #   include <pthread.h>
 #   undef STACKBOTTOM
-#   define STACKBOTTOM (ptr_t)pthread_get_stackaddr_np(pthread_self())
+#   define STACKBOTTOM (ptr_t)pthread_get_stackaddr_nppthread_get_stackaddr_np(pthread_self())
+# elif defined(NAUT)
+#   include <nautilus/thread.h>
+#   define STACKBOTTOM (ptr_t)nk_thread_getstackaddr_np(get_cur_thread())
 # endif
 
   ptr_t GC_get_main_stack_base(void)
@@ -1228,7 +1231,7 @@ GC_INNER word GC_page_size = 0;
           result = (ptr_t)(signed_word)(-sizeof(ptr_t));
 #     endif
 #   endif
-    GC_ASSERT(GC_approx_sp() HOTTER_THAN result);
+        GC_ASSERT(GC_approx_sp() HOTTER_THAN result);
     return(result);
   }
 # define GET_MAIN_STACKBASE_SPECIAL

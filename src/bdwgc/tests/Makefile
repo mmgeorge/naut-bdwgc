@@ -9,4 +9,5 @@ CFLAGS += -Isrc/bdwgc/include \
 	-DGC_DISABLE_INCREMENTAL \
 	-DNO_GETCONTEXT \
 	-DNO_DEBUGGING
-obj-y += test.o 
+obj-y += test.o \
+		setjmp_t.o

@@ -1772,8 +1772,16 @@ GC_INNER ptr_t GC_allocobj(size_t sz, int kind);
 
 /* We make the GC_clear_stack() call a tail one, hoping to get more of  */
 /* the stack.                                                           */
-#define GENERAL_MALLOC(lb,k) \
-    GC_clear_stack(GC_generic_malloc(lb, k))
+
+#ifdef NAUT
+# define GENERAL_MALLOC(lb,k) \
+     GC_generic_malloc(lb, k)
+
+#else
+# define GENERAL_MALLOC(lb,k) \
+     GC_clear_stack(GC_generic_malloc(lb, k))
+#endif
+
 #define GENERAL_MALLOC_IOP(lb,k) \
     GC_clear_stack(GC_generic_malloc_ignore_off_page(lb, k))
 
@@ -2013,7 +2021,8 @@ GC_API void GC_CALL GC_noop1(word);
 */
 #ifdef NAUT // Use normal print functionality
 //# include<nautilus/printk.h>
-# define GC_printf(...) printf(__VA_ARGS__)
+# define GC_printf(...) printk(__VA_ARGS__)
+//#define GC_printf(...) DEBUG_PRINT("Thread: " fmt, ##args)
 # define GC_err_printf(...) GC_printf(__VA_ARGS__)
 # define GC_log_printf(...) GC_printf(__VA_ARGS__)
 #else 
@@ -2287,7 +2296,14 @@ GC_INNER ptr_t GC_store_debug_info(ptr_t p, word sz, const char *str,
 /* were possible, and a couple of routines to facilitate        */
 /* catching accesses to bad addresses when that's               */
 /* possible/needed.                                             */
-#if defined(UNIX_LIKE) || (defined(NEED_FIND_LIMIT) && defined(CYGWIN32))
+#if defined(NAUT)
+# include <nautilus/setjmp.h>
+# define SETJMP(env) setjmp(env)
+# define LONGJMP(env, val) longjmp(env, val)
+# define JMP_BUF jmp_buf
+  extern JMP_BUF GC_jmp_buf;
+
+#elif defined(UNIX_LIKE) || (defined(NEED_FIND_LIMIT) && defined(CYGWIN32))
 # include <setjmp.h>
 # if defined(SUNOS5SIGS) && !defined(FREEBSD) && !defined(LINUX)
 #  include <sys/siginfo.h>
@@ -2298,12 +2314,6 @@ GC_INNER ptr_t GC_store_debug_info(ptr_t p, word sz, const char *str,
 # define LONGJMP(env, val) siglongjmp(env, val)
 # define JMP_BUF sigjmp_buf
 
-#elif defined(NAUT)
-# include <nautilus/setjmp.h>
-# define SETJMP(env) setjmp(env)
-# define LONGJMP(env, val) longjmp(env, val)
-# define JMP_BUF jmp_buf
-  extern JMP_BUF GC_jmp_buf;
 
 #else
 # ifdef ECOS

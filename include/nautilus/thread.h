@@ -33,7 +33,7 @@ extern "C" {
 #include <nautilus/queue.h>
 #include <nautilus/intrinsics.h>
 #include <nautilus/scheduler.h>
-
+  
 #define CPU_ANY       -1
 
 /* common thread stack sizes */
@@ -215,6 +215,10 @@ put_cur_thread (nk_thread_t * t)
 {
     per_cpu_put(cur_thread, t);
 }
+
+/** Needed for bdwgc */
+  void * nk_thread_getstackaddr_np (nk_thread_t *t);
+  
 
 
 #endif /* !__ASSEMBLER */

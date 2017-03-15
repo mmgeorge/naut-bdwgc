@@ -23,7 +23,12 @@
  * malloc.
  */
 # define PCR_NO_RENAME
+
+#ifdef NAUT
+# include <nautilus/mm.h>
+#else 
 # include <stdlib.h>
+#endif
 
 void * real_malloc(size_t size)
 {

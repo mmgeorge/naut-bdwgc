@@ -67,7 +67,8 @@ int * nested_sp(void)
     return (int *)sp;
 }
 
-int main(void)
+
+int bdwgc_test_setjmp(void)
 {
     volatile word sp;
     long ps = GETPAGESIZE();
@@ -77,6 +78,7 @@ int main(void)
 
     sp = (word)(&sp);
     printf("This appears to be a %s running %s\n", MACH_TYPE, OS_TYPE);
+
     if (nested_sp() < (int *)sp) {
       printf("Stack appears to grow down, which is the default.\n");
       printf("A good guess for STACKBOTTOM on this machine is 0x%lx.\n",

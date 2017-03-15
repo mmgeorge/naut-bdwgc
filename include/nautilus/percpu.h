@@ -27,6 +27,7 @@
 extern "C" {
 #endif
 
+#include <nautilus/printk.h>
 #include <stddef.h>
 
 struct cpu;
@@ -50,7 +51,7 @@ struct cpu;
 #define __percpu_seg %%gs
 
 
-#include <nautilus/nautilus.h>
+  //#include <nautilus/nautilus.h>
 
 #define __per_cpu_get(var, n)                                        \
     ({                                                               \

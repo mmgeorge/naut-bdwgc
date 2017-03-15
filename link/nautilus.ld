@@ -56,13 +56,15 @@ SECTIONS
         *(.gcc_except_table*)
         *(.gnu.linkonce.gcc_except*)
     }
+
+    _data_start = . ; 
     
     .data ALIGN(0x1000) : AT(ADDR(.gcc_except_table) + SIZEOF(.gcc_except_table))
     {
         *(.data*)
         *(.gnu.linkonce.d*)
     }
-    
+
     .rodata ALIGN(0x1000) : AT(ADDR(.data) + SIZEOF(.data))
     {
         *(.rodata*)
@@ -87,6 +89,8 @@ SECTIONS
     }
     
     _bssEnd = .; 
+
+    _data_end = . ;
     
     /DISCARD/ :
     {

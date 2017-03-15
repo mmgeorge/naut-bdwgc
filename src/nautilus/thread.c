@@ -1142,5 +1142,10 @@ nk_tls_test (void)
 }
 
 
+void *
+nk_thread_getstackaddr_np (nk_thread_t *t)
+{
+  return (void*)((uint64_t)t->stack + t->stack_size - sizeof(uint64_t));
+}
 
 
