@@ -28,6 +28,7 @@
 #  define GC_DEBUG
 #endif
 
+#include "test.h"
 #include "gc.h"
 
 #ifndef NTHREADS /* Number of additional threads to fork. */
@@ -1305,13 +1306,35 @@ void run_one_test(void)
 
 #ifdef NAUT
 int main();
-int bdwgc_runtests()
+
+int bdwgc_test_gc()
 {
-  printk("Running bdwgc tests\n");
+  #ifdef FIND_LEAK
+      panic("Cannot run bdwgc tests with leak detection enabled!")
+  #endif
+  printk("\nRunning bdwgc collector tests\n");
+  
+  printk("\nRunning main tests:\n");
   main();
+  
+  printk("\nRunning huge test:\n");
+  huge_test();
+  
+  printk("\nRunning realloc test:\n"); // Enabling this test causes atomic leak to show
+  realloc_test();
+  printk("\n");
+
   return 0;
 }
 
+
+int bdwgc_test_leak_detector()
+{
+  printk("\nRunning bdwgc leak test:\n");
+  leak_test();
+
+  return 0; 
+}
 #endif
 
 #define NUMBER_ROUND_UP(v, bound) ((((v) + (bound) - 1) / (bound)) * (bound))
@@ -1508,7 +1531,12 @@ void GC_CALLBACK warn_proc(char *msg, GC_word p)
 #       endif
 #      endif
 #   endif
-    run_one_test();
+
+   for (int it = 0; it < 5; it++ )
+     {
+       printk("Running test %d\n", it);
+       run_one_test();
+     }
     check_heap_stats();
 #   if !defined(MSWINCE) && !defined(NAUT)
       fflush(stdout);

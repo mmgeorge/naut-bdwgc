@@ -1,11 +1,14 @@
 
-#include <stdio.h>
-#include <stdlib.h>
+
+#include <nautilus/printk.h>
+#include <nautilus/libccompat.h>
+
+#include "test.h"
 #include "gc.h"
 
 #define COUNT 10000000
 
-int main(void) {
+int realloc_test(void) {
   int i;
   unsigned long last_heap_size = 0;
 
@@ -16,7 +19,7 @@ int main(void) {
     int *q = GC_MALLOC_ATOMIC(sizeof(int));
 
     if (p == 0 || *p != 0) {
-      fprintf(stderr, "GC_malloc returned garbage (or NULL)\n");
+      printk("GC_malloc returned garbage (or NULL)\n");
       exit(1);
     }
 
@@ -25,10 +28,11 @@ int main(void) {
     if (i % 10 == 0) {
       unsigned long heap_size = (unsigned long)GC_get_heap_size();
       if (heap_size != last_heap_size) {
-        printf("Heap size: %lu\n", heap_size);
+        printk("Heap size: %lu\n", heap_size);
         last_heap_size = heap_size;
       }
     }
   }
+  printk("Succesfully passed realloc test!\n");
   return 0;
 }

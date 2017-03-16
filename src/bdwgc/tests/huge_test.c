@@ -1,15 +1,18 @@
 
-#include <stdlib.h>
-#include <limits.h>
-#include <stdio.h>
+
+#include <nautilus/libccompat.h>
+#include <nautilus/limits.h>
+#include <nautilus/printk.h>
+
 
 #ifndef GC_IGNORE_WARN
-  /* Ignore misleading "Out of Memory!" warning (which is printed on    */
-  /* every GC_MALLOC(LONG_MAX) call) by defining this macro before      */
-  /* "gc.h" inclusion.                                                  */
+/* Ignore misleading "Out of Memory!" warning (which is printed on    */
+/* every GC_MALLOC(LONG_MAX) call) by defining this macro before      */
+/* "gc.h" inclusion.                                                  */
 # define GC_IGNORE_WARN
 #endif
 
+#include "test.h"
 #include "gc.h"
 
 /*
@@ -19,7 +22,7 @@
  * expected manner.
  */
 
-int main(void)
+int huge_test(void)
 {
     GC_INIT();
 
@@ -31,22 +34,21 @@ int main(void)
     if (sizeof(long) == sizeof(void *)) {
         void *r = GC_MALLOC(LONG_MAX-1024);
         if (0 != r) {
-            fprintf(stderr,
-                    "Size LONG_MAX-1024 allocation unexpectedly succeeded\n");
+            printk("Size LONG_MAX-1024 allocation unexpectedly succeeded\n");
             exit(1);
         }
         r = GC_MALLOC(LONG_MAX);
         if (0 != r) {
-            fprintf(stderr,
-                    "Size LONG_MAX allocation unexpectedly succeeded\n");
+            printk("Size LONG_MAX allocation unexpectedly succeeded\n");
             exit(1);
         }
         r = GC_MALLOC((size_t)LONG_MAX + 1024);
         if (0 != r) {
-            fprintf(stderr,
-                    "Size LONG_MAX+1024 allocation unexpectedly succeeded\n");
+            printk("Size LONG_MAX+1024 allocation unexpectedly succeeded\n");
             exit(1);
         }
     }
+    printk("Successfully passed huge test!\n");
+
     return 0;
 }

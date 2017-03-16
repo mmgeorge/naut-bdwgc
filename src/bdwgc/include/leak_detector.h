@@ -23,13 +23,6 @@
 #endif
 #include "gc.h"
 
-#ifndef GC_DONT_INCLUDE_STDLIB
-  /* We ensure stdlib.h and string.h are included before        */
-  /* redirecting malloc() and the accompanying functions.       */
-# include <stdlib.h>
-# include <string.h>
-#endif
-
 #undef malloc
 #define malloc(n) GC_MALLOC(n)
 #undef calloc
@@ -43,14 +36,6 @@
 #define strdup(s) GC_STRDUP(s)
 #undef strndup
 #define strndup(s,n) GC_STRNDUP(s,n)
-
-#ifdef GC_REQUIRE_WCSDUP
-  /* The collector should be built with GC_REQUIRE_WCSDUP       */
-  /* defined as well to redirect wcsdup().                      */
-# include <wchar.h>
-# undef wcsdup
-# define wcsdup(s) GC_WCSDUP(s)
-#endif
 
 #undef memalign
 #define memalign(a,n) GC_memalign(a,n)

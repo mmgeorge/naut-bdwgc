@@ -91,9 +91,9 @@ GC_INNER void GC_print_all_errors(void)
     for (i = 0; i < n_leaked; i++) {
         ptr_t p = leaked[i];
         if (HDR(p) -> hb_obj_kind == PTRFREE) {
-            GC_err_printf("Leaked atomic object at ");
+            GC_err_printf("LEAKDETECT: Leaked atomic object at ");
         } else {
-            GC_err_printf("Leaked composite object at ");
+            GC_err_printf("LEAKDETECT: Leaked composite object at ");
         }
         GC_print_heap_obj(p);
         GC_err_printf("\n");

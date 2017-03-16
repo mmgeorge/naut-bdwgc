@@ -89,12 +89,27 @@
 #include <dev/vesa.h>
 #endif
 
-// TEMP
+// BDWGC
+// Experimental support for leak detection
+// Cannot run leak detection with normal garbage collection
+// Does not support threads 
+// #define NAUT_ENABLE_LEAK_DETECTION  
+
+#ifdef NAUT_ENABLE_LEAK_DETECTION
+#ifndef GC_DEBUG
+# define GC_DEBUG
+#endif
+#ifndef FIND_LEAK
+# define FIND_LEAK
+#endif
+#define CHECK_LEAKS() GC_gcollect()
+#include "../../../src/bdwgc/include/gc.h"
+#endif
+
 #include "../../../src/bdwgc/include/test.h"
 
 
 extern spinlock_t printk_lock;
-
 
 
 #define QUANTUM_IN_NS (1000000000ULL/NAUT_CONFIG_HZ)
@@ -242,14 +257,14 @@ static int launch_vmm_environment()
 
 extern struct naut_info * smp_ap_stack_switch(uint64_t, uint64_t, struct naut_info*);
 
+
 void
 init (unsigned long mbd,
       unsigned long magic)
 {
     struct naut_info * naut = &nautilus_info;
-
+    
     memset(naut, 0, sizeof(struct naut_info));
-
     vga_init();
 
     spinlock_init(&printk_lock);
@@ -268,7 +283,11 @@ init (unsigned long mbd,
 
     nk_vc_print(NAUT_WELCOME);
 
-    
+    #ifdef NAUT_ENABLE_LEAK_DETECTION
+    printk("LEAKDETECT: Running Nautilus with leak detection\n");
+        GC_set_find_leak(1);
+    #endif
+        
     detect_cpu();
 
     /* setup the temporary boot-time allocator */
@@ -278,7 +297,7 @@ init (unsigned long mbd,
     if (!naut->sys.mb_info) {
         ERROR_PRINT("Problem parsing multiboot header\n");
     }
-
+    
     nk_acpi_init();
 
     /* enumerate CPUs and initialize them */
@@ -304,11 +323,10 @@ init (unsigned long mbd,
     disable_8259pic();
 
     i8254_init(naut);
-
     /* from this point on, we can use percpu macros (even if the APs aren't up) */
 
     sysinfo_init(&(naut->sys));
-
+    
     ioapic_init(&(naut->sys));
 
     nk_timer_init();
@@ -323,16 +341,32 @@ init (unsigned long mbd,
 
     pci_init(naut);
 
+
     nk_sched_init(&sched_cfg);
 
-    /* we now switch away from the boot-time stack in low memory */
+    #ifdef NAUT_ENABLE_LEAK_DETECTION
+    printk("LEAKDETECT: Initializing leak detector\n");
+    GC_INIT();
+    
+    #undef malloc
+    #define malloc(n) GC_MALLOC(n)
+    #undef calloc
+    #define calloc(m,n) GC_MALLOC((m)*(n))
+    #undef free
+    #define free(p) GC_FREE(p)
+    #undef realloc
+    #define realloc(p,n) GC_REALLOC(p,n)
+    #endif
+
+    // we now switch away from the boot-time stack in low memory 
     naut = smp_ap_stack_switch(get_cur_thread()->rsp, get_cur_thread()->rsp, naut);
 
     mm_boot_kmem_cleanup();
 
     smp_setup_xcall_bsp(naut->sys.cpus[0]);
 
-    nk_cpu_topo_discover(naut->sys.cpus[0]); 
+    nk_cpu_topo_discover(naut->sys.cpus[0]);
+
 #ifdef NAUT_CONFIG_HPET
     nk_hpet_init();
 #endif
@@ -341,7 +375,7 @@ init (unsigned long mbd,
     nk_instrument_init();
 #endif
 
-#ifdef NAUT_CONFIG_REAL_MODE_INTERFACE 
+#ifdef NAUT_CONFIG_REAL_MODE_INTERFACE
     nk_real_mode_init();
 #endif
 
@@ -359,7 +393,7 @@ init (unsigned long mbd,
     extern void nk_cxx_init(void);
     // Assuming we don't encounter C++ before here
     nk_cxx_init();
-#endif 
+#endif
 
     /* interrupts on */
     sti();
@@ -385,14 +419,18 @@ init (unsigned long mbd,
     nk_fs_ext2_attach("ramdisk0","rootfs", 1);
 #endif
 #endif
-    //test_setlong();
+
     launch_vmm_environment();
 
-    bdwgc_runtests();
-
-    //nk_launch_shell("root-shell",0);
-
-    //runtime_init();
+    #ifdef NAUT_ENABLE_LEAK_DETECTION
+        CHECK_LEAKS();
+        bdwgc_test_leak_detector();
+    #else
+        bdwgc_test_gc(); // Cannot run tests in leak detection mode 
+    #endif
+    
+    nk_launch_shell("root-shell", 0);
+    runtime_init();
 
     printk("Nautilus boot thread yielding (indefinitely)\n");
 

@@ -783,7 +783,6 @@ GC_API void * GC_CALL GC_debug_malloc_uncollectable(size_t lb,
 
 GC_API void GC_CALL GC_debug_free(void * p)
 {
-  printk("ENTER GC_debug_free, %p\n", p);
     ptr_t base;
     if (0 == p) return;
 
@@ -839,8 +838,6 @@ GC_API void GC_CALL GC_debug_free(void * p)
         GC_ASSERT((word *)p + i == (word *)(base + hhdr -> hb_sz));
         
       }
-
-      printf("EXIT GC_FREE\n");
     } /* !GC_find_leak */
 }
 
