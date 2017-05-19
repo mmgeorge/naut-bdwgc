@@ -2313,6 +2313,8 @@ extern char _data_end[];
 #       undef MPROTECT_VDB
 #       undef NEED_FIND_LIMIT
 #       undef HAVE_BUILTIN_UNWIND_INIT
+#       define THREADS
+//#       define GC_PTHREADS
 #       define GC_ASSERTIONS
 #       define OS_TYPE "NAUTILUS"
 #       define GETPAGESIZE() 4096
