@@ -36,39 +36,6 @@
 
 
 #ifdef NAUT_CONFIG_ENABLE_BDWGC
-
-/* #ifdef NAUT_ENABLE_LEAK_DETECTION */
-/* #  ifndef GC_DEBUG */
-/* #    define GC_DEBUG */
-/* #  endif */
-/* #  ifndef FIND_LEAK */
-/* #    define FIND_LEAK */
-/* #  endif */
-/* #  define CHECK_LEAKS() GC_gcollect() */
-/* #  include "../../../src/bdwgc/include/gc.h" */
-
-    /* printk("LEAKDETECT: Initializing leak detector\n"); */
-    /* GC_INIT(); */
-    
-    /* #undef malloc */
-    /* #define malloc(n) GC_MALLOC(n) */
-    /* #undef calloc */
-    /* #define calloc(m,n) GC_MALLOC((m)*(n)) */
-    /* #undef free */
-    /* #define free(p) GC_FREE(p) */
-    /* #undef realloc */
-    /* #define realloc(p,n) GC_REALLOC(p,n) */
-
-/* #endif */
-
-
-/* #ifdef NAUT_ENABLE_LEAK_DETECTION */
-/*         CHECK_LEAKS(); */
-/*         bdwgc_test_leak_detector(); */
-/* #else */
-/*         bdwgc_test_gc(); // Cannot run tests in leak detection mode  */
-/* #endif */
-
 #include "../../src/bdwgc/include/test.h"
 #endif
 
@@ -879,7 +846,9 @@ static void shell(void *in, void **out)
   
   nk_vc_clear(0x9f);
 
+  #ifdef NAUT_CONFIG_ENABLE_BDWGC
   handle_boehm_gc_test();
+  #endif
   
   while (1) {  
     nk_vc_printf("%s> ", (char*)in);

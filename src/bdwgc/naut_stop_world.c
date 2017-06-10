@@ -26,7 +26,7 @@
 GC_INNER void GC_stop_world(void)
 {
   BDWGC_DEBUG("Stopping the world from %p\n", get_cur_thread());
-  //cli();
+  cli();
 }
 
 
@@ -35,7 +35,7 @@ GC_INNER void GC_stop_world(void)
 GC_INNER void GC_start_world(void)
 {
   BDWGC_DEBUG("Starting the world from %p\n", get_cur_thread());
-  //  sti();
+  sti();
 }
 
 

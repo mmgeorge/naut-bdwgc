@@ -32,7 +32,7 @@
 #include "gc.h"
 
 #ifndef NTHREADS /* Number of additional threads to fork. */
-#  define NTHREADS 5 /* excludes main thread, which also runs a test. */
+#  define NTHREADS 1 /** Tested working on up to 10 threads */
         /* Not respected by PCR test. */
 #endif
 

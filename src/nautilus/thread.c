@@ -824,8 +824,8 @@ nk_thread_queue_wake_all (nk_thread_queue_t * q)
     uint8_t flags;
 
     THREAD_DEBUG("Waking all waiters on thread queue (q=%p)\n", (void*)q);
-    BDWGC_DEBUG("Ensuring my status is exited\n");
-    ASSERT(get_cur_thread()->status == NK_THR_EXITED);
+
+    //ASSERT(get_cur_thread()->status == NK_THR_EXITED);
     
     ASSERT(q);
 
