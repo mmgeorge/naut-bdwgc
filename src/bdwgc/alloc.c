@@ -19,6 +19,7 @@
 
 #ifdef NAUT
 # include <nautilus/naut_types.h>
+# include "private/gc_locks.h"
 #else /** !NAUT */
 # include <stdio.h>
 # if !defined(MACOS) && !defined(MSWINCE)
@@ -414,6 +415,8 @@ STATIC void GC_maybe_gc(void)
  */
 GC_INNER GC_bool GC_try_to_collect_inner(GC_stop_func stop_func)
 {
+  BDWGC_DEBUG("Running stop the world gc (GC_try_to_collect_inner)\n");
+  
 #   ifndef SMALL_CONFIG
       CLOCK_TYPE start_time = 0; /* initialized to prevent warning. */
       CLOCK_TYPE current_time;
@@ -706,6 +709,9 @@ GC_INNER void GC_set_fl_marks(ptr_t q)
           ++hhdr -> hb_n_marks;
         }
 
+        if (q == NULL)
+          panic("Cant be null");
+        
         q = obj_link(q);
         if (q == NULL)
           break;

@@ -32,63 +32,73 @@
 # error USE_HPUX_TLS macro was replaced by USE_COMPILER_TLS
 #endif
 
-#if !defined(USE_PTHREAD_SPECIFIC) && !defined(USE_WIN32_SPECIFIC) \
-    && !defined(USE_WIN32_COMPILER_TLS) && !defined(USE_COMPILER_TLS) \
-    && !defined(USE_CUSTOM_SPECIFIC)
-# if defined(MSWIN32) || defined(MSWINCE) || defined(CYGWIN32)
-#   if defined(__GNUC__) /* Fixed for versions past 2.95? */ \
-       || defined(MSWINCE)
-#     define USE_WIN32_SPECIFIC
-#   else
-#     define USE_WIN32_COMPILER_TLS
-#   endif /* !GNU */
-# elif defined(LINUX) && !defined(ARM32) && !defined(AVR32) \
-       && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >=3))
-#   define USE_COMPILER_TLS
-# elif defined(GC_DGUX386_THREADS) || defined(GC_OSF1_THREADS) \
-       || defined(GC_DARWIN_THREADS) || defined(GC_AIX_THREADS) \
-       || defined(GC_NETBSD_THREADS) || defined(GC_RTEMS_PTHREADS)
-#   define USE_PTHREAD_SPECIFIC
-# elif defined(GC_HPUX_THREADS)
-#   ifdef __GNUC__
-#    define USE_PTHREAD_SPECIFIC
-     /* Empirically, as of gcc 3.3, USE_COMPILER_TLS doesn't work.      */
-#   else
-#    define USE_COMPILER_TLS
-#   endif
-# else
-#   define USE_CUSTOM_SPECIFIC  /* Use our own. */
-# endif
+/* #if !defined(USE_PTHREAD_SPECIFIC) && !defined(USE_WIN32_SPECIFIC) \ */
+/*     && !defined(USE_WIN32_COMPILER_TLS) && !defined(USE_COMPILER_TLS) \ */
+/*     && !defined(USE_CUSTOM_SPECIFIC) */
+/* # if defined(MSWIN32) || defined(MSWINCE) || defined(CYGWIN32) */
+/* #   if defined(__GNUC__) /\* Fixed for versions past 2.95? *\/ \ */
+/*        || defined(MSWINCE) */
+/* #     define USE_WIN32_SPECIFIC */
+/* #   else */
+/* #     define USE_WIN32_COMPILER_TLS */
+/* #   endif /\* !GNU *\/ */
+/* # elif defined(LINUX) && !defined(ARM32) && !defined(AVR32) \ */
+/*        && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >=3)) */
+/* #   define USE_COMPILER_TLS */
+/* # elif defined(GC_DGUX386_THREADS) || defined(GC_OSF1_THREADS) \ */
+/*        || defined(GC_DARWIN_THREADS) || defined(GC_AIX_THREADS) \ */
+/*        || defined(GC_NETBSD_THREADS) || defined(GC_RTEMS_PTHREADS) */
+/* #   define USE_PTHREAD_SPECIFIC */
+/* # elif defined(GC_HPUX_THREADS) */
+/* #   ifdef __GNUC__ */
+/* #    define USE_PTHREAD_SPECIFIC */
+/*      /\* Empirically, as of gcc 3.3, USE_COMPILER_TLS doesn't work.      *\/ */
+/* #   else */
+/* #    define USE_COMPILER_TLS */
+/* #   endif */
+/* # else */
+/* #   define USE_CUSTOM_SPECIFIC  /\* Use our own. *\/ */
+/* # endif */
+/* #endif */
+
+#ifndef NAUT
+#include <stdlib.h>
 #endif
 
-#include <stdlib.h>
+#ifndef TINY_FREELISTS
+#define TINY_FREELISTS GC_TINY_FREELISTS
+#endif
 
+
+#ifndef NAUT
 /* One of these should be declared as the tlfs field in the     */
 /* structure pointed to by a GC_thread.                         */
-typedef struct thread_local_freelists {
-  void * ptrfree_freelists[TINY_FREELISTS];
-  void * normal_freelists[TINY_FREELISTS];
-# ifdef GC_GCJ_SUPPORT
-    void * gcj_freelists[TINY_FREELISTS];
-#   define ERROR_FL ((void *)(word)-1)
-        /* Value used for gcj_freelists[-1]; allocation is      */
-        /* erroneous.                                           */
-# endif
-  /* Free lists contain either a pointer or a small count       */
-  /* reflecting the number of granules allocated at that        */
-  /* size.                                                      */
-  /* 0 ==> thread-local allocation in use, free list            */
-  /*       empty.                                               */
-  /* > 0, <= DIRECT_GRANULES ==> Using global allocation,       */
-  /*       too few objects of this size have been               */
-  /*       allocated by this thread.                            */
-  /* >= HBLKSIZE  => pointer to nonempty free list.             */
-  /* > DIRECT_GRANULES, < HBLKSIZE ==> transition to            */
-  /*    local alloc, equivalent to 0.                           */
-# define DIRECT_GRANULES (HBLKSIZE/GRANULE_BYTES)
-        /* Don't use local free lists for up to this much       */
-        /* allocation.                                          */
-} *GC_tlfs;
+/* typedef struct thread_local_freelists { */
+/*   void * ptrfree_freelists[TINY_FREELISTS]; */
+/*   void * normal_freelists[TINY_FREELISTS]; */
+/* # ifdef GC_GCJ_SUPPORT */
+/*     void * gcj_freelists[TINY_FREELISTS]; */
+/* #   define ERROR_FL ((void *)(word)-1) */
+/*         /\* Value used for gcj_freelists[-1]; allocation is      *\/ */
+/*         /\* erroneous.                                           *\/ */
+/* # endif */
+/*   /\* Free lists contain either a pointer or a small count       *\/ */
+/*   /\* reflecting the number of granules allocated at that        *\/ */
+/*   /\* size.                                                      *\/ */
+/*   /\* 0 ==> thread-local allocation in use, free list            *\/ */
+/*   /\*       empty.                                               *\/ */
+/*   /\* > 0, <= DIRECT_GRANULES ==> Using global allocation,       *\/ */
+/*   /\*       too few objects of this size have been               *\/ */
+/*   /\*       allocated by this thread.                            *\/ */
+/*   /\* >= HBLKSIZE  => pointer to nonempty free list.             *\/ */
+/*   /\* > DIRECT_GRANULES, < HBLKSIZE ==> transition to            *\/ */
+/*   /\*    local alloc, equivalent to 0.                           *\/ */
+/* # define DIRECT_GRANULES (HBLKSIZE/GRANULE_BYTES) */
+/*         /\* Don't use local free lists for up to this much       *\/ */
+/*         /\* allocation.                                          *\/ */
+/* } *GC_tlfs; */
+
+#endif
 
 #if defined(USE_PTHREAD_SPECIFIC)
 # define GC_getspecific pthread_getspecific
@@ -101,7 +111,7 @@ typedef struct thread_local_freelists {
 # define GC_setspecific(key, v) ((key) = (v), 0)
 # define GC_key_create(key, d) 0
 # define GC_remove_specific(key)  /* No need for cleanup on exit. */
-  typedef void * GC_key_t;
+  typedef nk_tls_key_t GC_key_t;
 #elif defined(USE_WIN32_SPECIFIC)
 # ifndef WIN32_LEAN_AND_MEAN
 #   define WIN32_LEAN_AND_MEAN 1
@@ -122,6 +132,17 @@ typedef struct thread_local_freelists {
   typedef DWORD GC_key_t;
 #elif defined(USE_CUSTOM_SPECIFIC)
 # include "private/specific.h"
+
+#elif defined(NAUT_THREADS)
+
+// Needs implementation
+# define GC_getspecific(x) nk_tls_get(x)
+# define GC_setspecific(key, v) nk_tls_set(key, v)
+# define GC_key_create(key, d) nk_tls_key_create(key, d)
+// nk_tls_key_create(&local_proc_key, thread_proc_free);
+# define GC_remove_specific(key)  /* No need for cleanup on exit. */
+  typedef nk_tls_key_t GC_key_t;
+
 #else
 # error implement me
 #endif
@@ -147,7 +168,7 @@ extern
 #elif defined(USE_WIN32_COMPILER_TLS)
   __declspec(thread)
 #endif
-GC_key_t GC_thread_key;
+//GC_key_t GC_thread_key;
 /* This is set up by the thread_local_alloc implementation.  No need    */
 /* for cleanup on thread exit.  But the thread support layer makes sure */
 /* that GC_thread_key is traced, if necessary.                          */

@@ -29,10 +29,20 @@ extern "C" {
 
 #ifndef __ASSEMBLER__
 
+
+#ifdef NAUT_CONFIG_ENABLE_BDWGC
+  struct nk_thread; // avoid warnings 
+#endif
+  
 #include <nautilus/spinlock.h>
 #include <nautilus/queue.h>
 #include <nautilus/intrinsics.h>
 #include <nautilus/scheduler.h>
+
+#ifdef NAUT_CONFIG_ENABLE_BDWGC
+#include <nautilus/bdwgc.h>
+#endif
+
   
 #define CPU_ANY       -1
 
@@ -124,6 +134,7 @@ typedef enum {
 
 typedef struct nk_queue nk_thread_queue_t;
 
+  
 struct nk_thread {
     uint64_t rsp; /* SHOULD NOT CHANGE POSITION */
     void * stack; /* SHOULD NOT CHANGE POSITION */
@@ -165,13 +176,22 @@ struct nk_thread {
 
     struct nk_virtual_console *vc;
 
+    #ifdef NAUT_CONFIG_ENABLE_BDWGC
+
+    bdwgc_thread_state *gc_state;
+
+    #endif
     char name[MAX_THREAD_NAME];
 
     const void * tls[TLS_MAX_KEYS];
 
     uint8_t fpu_state[FXSAVE_SIZE] __align(16);
+
+    
+  
 } __packed;
 
+  
 // internal thread representations
 typedef struct nk_thread nk_thread_t;
 

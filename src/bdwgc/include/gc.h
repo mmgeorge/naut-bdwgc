@@ -80,6 +80,10 @@ GC_API GC_word GC_CALL GC_get_gc_no(void);
                         /* it requires GC_call_with_alloc_lock() to     */
                         /* avoid data races on multiprocessors.         */
 
+#ifdef NAUT
+#define GC_THREADS
+#endif
+    
 #ifdef GC_THREADS
   GC_API int GC_parallel;
                         /* GC is parallelized for performance on        */

@@ -13,8 +13,8 @@
  * modified is included with the above copyright notice.
  */
 
+#include "gc.h"
 #include "private/gc_pmark.h"
-
 
 #ifndef NAUT
 # include <limits.h>
@@ -262,6 +262,16 @@ GC_INNER void GC_extend_size_map(size_t i)
  * that are not written.  We partially address this by clearing
  * sections of the stack whenever we get control.
  */
+
+void dump_tsi(void* arg, unsigned long size)
+{
+  nk_thread_t * t = get_cur_thread();
+  
+  printk("Clearing from %p to %p (rsp=%p, stack= %p to %p)\n",
+         arg, arg + size, &t, t->stack, t->stack + t->stack_size);
+}
+
+
 # ifdef THREADS
 #   define BIG_CLEAR_SIZE 2048  /* Clear this much now and then.        */
 #   define SMALL_CLEAR_SIZE 256 /* Clear this much every time.          */
@@ -289,7 +299,6 @@ GC_INNER void GC_extend_size_map(size_t i)
   void * GC_clear_stack_inner(void *arg, ptr_t limit)
   {
     volatile word dummy[CLEAR_SIZE];
-
     BZERO((/* no volatile */ void *)dummy, sizeof(dummy));
     if ((word)GC_approx_sp() COOLER_THAN (word)limit) {
         (void) GC_clear_stack_inner(arg, limit);
@@ -300,6 +309,7 @@ GC_INNER void GC_extend_size_map(size_t i)
     return(arg);
   }
 #endif
+
 
 /* Clear some of the inaccessible part of the stack.  Returns its       */
 /* argument, so it can be used in a tail call position, hence clearing  */
@@ -1428,6 +1438,7 @@ GC_API GC_warn_proc GC_CALL GC_get_warn_proc(void)
   /* Abort the program with a message. msg must not be NULL. */
   void GC_abort(const char *msg)
   {
+    BDWGC_DEBUG("WARNING: CALLING ABORT\n");
 #   if defined(MSWIN32)
 #     ifndef DONT_USE_USER32_DLL
         /* Use static binding to "user32.dll".  */
@@ -1683,10 +1694,12 @@ STATIC void GC_do_blocking_inner(ptr_t data, void * context)
 /* collected heap).                                                     */
 GC_API void * GC_CALL GC_do_blocking(GC_fn_type fn, void * client_data)
 {
+  BDWGC_DEBUG("GC_do_blocking\n");
     struct blocking_data my_data;
 
     my_data.fn = fn;
     my_data.client_data = client_data;
+    BDWGC_DEBUG("GC_with_callee_saves_pushed\n");
     GC_with_callee_saves_pushed(GC_do_blocking_inner, (ptr_t)(&my_data));
     return my_data.client_data; /* result */
 }

@@ -2313,18 +2313,28 @@ extern char _data_end[];
 #       undef MPROTECT_VDB
 #       undef NEED_FIND_LIMIT
 #       undef HAVE_BUILTIN_UNWIND_INIT
-#       define THREADS
+//#       define THREAD_GROWS_UP
+//#       define GC_THREADS // parallel marker
+#       define NAUT_THREADS
+#       define DEBUG_THREADS
+//#       define GC_PTHREADS
 //#       define GC_PTHREADS
 #       define GC_ASSERTIONS
 #       define OS_TYPE "NAUTILUS"
 #       define GETPAGESIZE() 4096
-#       define GC_DEBUG
+//#       define GC_DEBUG
 #       define ALIGNMENT 8
 #       define DATASTART (void *)&_data_start
 #       define DATAEND (void *)&_data_end
 #       define GC_READ_ENV_FILE
 #       define NO_GETENV
 #       define STRTOULL simple_strtoull
+
+#       ifdef NAUT_THREADS
+#          define THREADS
+#       include <nautilus/thread.h>
+#       endif
+
 #   endif 
 # endif /* X86_64 */
 

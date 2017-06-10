@@ -154,7 +154,8 @@ GC_API int GC_CALL GC_general_register_disappearing_link(void * * link,
     if (((word)link & (ALIGNMENT-1)) || link == NULL)
         ABORT("Bad arg to GC_general_register_disappearing_link");
     LOCK();
-    GC_ASSERT(obj != NULL && GC_base(obj) == obj);
+    GC_ASSERT(obj != NULL);
+    GC_ASSERT(GC_base(obj) == obj);
     if (log_dl_table_size == -1
         || GC_dl_entries > ((word)1 << log_dl_table_size)) {
         GC_grow_table((struct hash_chain_entry ***)(&dl_head),

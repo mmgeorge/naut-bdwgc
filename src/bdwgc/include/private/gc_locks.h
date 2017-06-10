@@ -28,6 +28,32 @@
  */
 # ifdef THREADS
 
+# ifdef NAUT_THREADS
+
+#include "private/pthread_support.h"
+
+GC_EXTERN GC_bool GC_need_to_lock;
+GC_EXTERN unsigned long GC_lock_holder;
+GC_EXTERN NK_LOCK_T GC_allocate_ml;
+
+# define GetCurrentThreadId() NUMERIC_THREAD_ID(get_cur_thread())
+
+#   define NO_THREAD ((unsigned long)(-1l))
+
+#   define LOCK() NK_LOCK(&GC_allocate_ml)
+#   define UNLOCK() NK_UNLOCK(&GC_allocate_ml)
+#   define SET_LOCK_HOLDER() GC_lock_holder = NUMERIC_THREAD_ID(get_cur_thread())
+#   define UNSET_LOCK_HOLDER() GC_lock_holder = NO_THREAD
+#   define NUMERIC_THREAD_ID(id) ((unsigned long)(id))
+#   define THREAD_EQUAL(id1, id2) ((id1) == (id2))
+
+// For assertions
+#   define I_HOLD_LOCK() (!GC_need_to_lock                             \
+                           || GC_lock_holder == GetCurrentThreadId())
+#   define I_DONT_HOLD_LOCK() (!GC_need_to_lock                        \
+                                || GC_lock_holder != GetCurrentThreadId())     
+# else
+
 #  if defined(GC_PTHREADS) && !defined(GC_WIN32_THREADS)
 #    include "atomic_ops.h"
 #  endif
@@ -188,6 +214,8 @@
 #  endif /* GC_PTHREADS with linux_threads.c implementation */
    GC_EXTERN GC_bool GC_need_to_lock;
 
+# endif //! NAUT
+
 # else /* !THREADS */
 #   define LOCK()
 #   define UNLOCK()
@@ -198,6 +226,7 @@
                 /* Used only in positive assertions or to test whether  */
                 /* we still need to acquire the lock.  TRUE works in    */
                 /* either case.                                         */
+
 # endif /* !THREADS */
 
 #if defined(UNCOND_LOCK) && !defined(LOCK)

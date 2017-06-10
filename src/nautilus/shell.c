@@ -34,6 +34,45 @@
 #include <nautilus/backtrace.h>
 #include <test/ipi.h>
 
+
+#ifdef NAUT_CONFIG_ENABLE_BDWGC
+
+/* #ifdef NAUT_ENABLE_LEAK_DETECTION */
+/* #  ifndef GC_DEBUG */
+/* #    define GC_DEBUG */
+/* #  endif */
+/* #  ifndef FIND_LEAK */
+/* #    define FIND_LEAK */
+/* #  endif */
+/* #  define CHECK_LEAKS() GC_gcollect() */
+/* #  include "../../../src/bdwgc/include/gc.h" */
+
+    /* printk("LEAKDETECT: Initializing leak detector\n"); */
+    /* GC_INIT(); */
+    
+    /* #undef malloc */
+    /* #define malloc(n) GC_MALLOC(n) */
+    /* #undef calloc */
+    /* #define calloc(m,n) GC_MALLOC((m)*(n)) */
+    /* #undef free */
+    /* #define free(p) GC_FREE(p) */
+    /* #undef realloc */
+    /* #define realloc(p,n) GC_REALLOC(p,n) */
+
+/* #endif */
+
+
+/* #ifdef NAUT_ENABLE_LEAK_DETECTION */
+/*         CHECK_LEAKS(); */
+/*         bdwgc_test_leak_detector(); */
+/* #else */
+/*         bdwgc_test_gc(); // Cannot run tests in leak detection mode  */
+/* #endif */
+
+#include "../../src/bdwgc/include/test.h"
+#endif
+
+
 #ifdef NAUT_CONFIG_PALACIOS
 #include <nautilus/vmm.h>
 #endif
@@ -88,6 +127,14 @@ static void burner(void *in, void **out)
 	}
     }
 }
+
+
+static void handle_boehm_gc_test ()
+{
+    printk("Testing the Boehm garbage collector\n");
+    bdwgc_test_gc();
+}
+
 
 static int launch_aperiodic_burner(char *name, uint64_t size_ns, uint32_t tpr, uint64_t priority)
 {
@@ -561,12 +608,17 @@ static int handle_cmd(char *buf, int n)
 	handle_blktest(buf);
 	return 0;
   }
-
+  
   if (!strncasecmp(buf,"attach",6)) {
 	handle_attach(buf);
 	return 0;
   }
 
+  if (!strncasecmp(buf,"gctest", 6)) {
+	handle_boehm_gc_test(buf);
+	return 0;
+  }
+  
   if (sscanf(buf,"shell %s", name)==1) { 
     nk_launch_shell(name,-1);
     return 0;
@@ -826,7 +878,9 @@ static void shell(void *in, void **out)
   nk_switch_to_vc(vc);
   
   nk_vc_clear(0x9f);
-   
+
+  handle_boehm_gc_test();
+  
   while (1) {  
     nk_vc_printf("%s> ", (char*)in);
     nk_vc_gets(buf,MAX_CMD,1);
@@ -867,7 +921,7 @@ nk_thread_id_t nk_launch_shell(char *name, int cpu)
   strncpy(n,name,32);
   n[31]=0;
   
-  if (nk_thread_start(shell, (void*)n, 0, 1, PAGE_SIZE_4KB, &tid, cpu)) { 
+  if (nk_thread_start(shell, (void*)n, 0, 1, 1024*1024, &tid, cpu)) {  //PAGE_SIZE_4KB
       free(n);
       return 0;
   } else {

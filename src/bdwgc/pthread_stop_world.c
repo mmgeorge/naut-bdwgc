@@ -15,7 +15,329 @@
  * modified is included with the above copyright notice.
  */
 
+
+#include <nautilus/scheduler.h>
 #include "private/pthread_support.h"
+
+
+#ifdef NAUT_THREADS
+
+
+GC_INNER void GC_stop_world(void)
+{
+  #ifdef NAUT
+  BDWGC_DEBUG("Stopping the world from %p\n", get_cur_thread());
+
+
+
+
+    
+
+
+    
+# else
+# if !defined(GC_OPENBSD_THREADS) && !defined(NACL)
+    int i;
+    int n_live_threads;
+    int code;
+# endif
+  GC_ASSERT(I_HOLD_LOCK());
+# ifdef DEBUG_THREADS
+    GC_log_printf("Stopping the world from 0x%x\n", (unsigned)pthread_self());
+# endif
+
+  /* Make sure all free list construction has stopped before we start.  */
+  /* No new construction can start, since free list construction is     */
+  /* required to acquire and release the GC lock before it starts,      */
+  /* and we have the lock.                                              */
+# ifdef PARALLEL_MARK
+    if (GC_parallel) {
+      GC_acquire_mark_lock();
+      GC_ASSERT(GC_fl_builder_count == 0);
+      /* We should have previously waited for it to become zero.        */
+    }
+# endif /* PARALLEL_MARK */
+
+# if defined(GC_OPENBSD_THREADS) || defined(NACL)
+    (void)GC_suspend_all();
+# else
+    AO_store(&GC_stop_count, GC_stop_count+1);
+        /* Only concurrent reads are possible. */
+    AO_store_release(&GC_world_is_stopped, TRUE);
+    n_live_threads = GC_suspend_all();
+
+    if (GC_retry_signals) {
+      unsigned long wait_usecs = 0;  /* Total wait since retry. */
+#     define WAIT_UNIT 3000
+#     define RETRY_INTERVAL 100000
+      for (;;) {
+        int ack_count;
+
+        sem_getvalue(&GC_suspend_ack_sem, &ack_count);
+        if (ack_count == n_live_threads) break;
+        if (wait_usecs > RETRY_INTERVAL) {
+          int newly_sent = GC_suspend_all();
+
+          if (GC_print_stats) {
+            GC_log_printf("Resent %d signals after timeout\n", newly_sent);
+          }
+          sem_getvalue(&GC_suspend_ack_sem, &ack_count);
+          if (newly_sent < n_live_threads - ack_count) {
+            WARN("Lost some threads during GC_stop_world?!\n",0);
+            n_live_threads = ack_count + newly_sent;
+          }
+          wait_usecs = 0;
+        }
+        usleep(WAIT_UNIT);
+        wait_usecs += WAIT_UNIT;
+      }
+    }
+
+    for (i = 0; i < n_live_threads; i++) {
+      retry:
+        if (0 != (code = sem_wait(&GC_suspend_ack_sem))) {
+          /* On Linux, sem_wait is documented to always return zero.    */
+          /* But the documentation appears to be incorrect.             */
+          if (errno == EINTR) {
+            /* Seems to happen with some versions of gdb.       */
+            goto retry;
+          }
+          ABORT("sem_wait for handler failed");
+        }
+    }
+# endif
+
+# ifdef PARALLEL_MARK
+    if (GC_parallel)
+      GC_release_mark_lock();
+# endif
+# ifdef DEBUG_THREADS
+    GC_log_printf("World stopped from 0x%x\n", (unsigned)pthread_self());
+    GC_stopping_thread = 0;
+# endif
+
+# endif // !NAUT
+}
+
+
+static void push_thread_stack(nk_thread_t *t)
+{
+  ptr_t lo, hi;
+  struct GC_traced_stack_sect_s *traced_stack_sect;
+  word total_size = 0;
+  
+  if (!GC_thr_initialized) GC_thr_init();
+  
+  traced_stack_sect = t -> traced_stack_sect;
+
+  lo = t -> stack;
+  hi = nk_thread_getstackaddr_np(t);
+  
+  if (traced_stack_sect != NULL
+      && traced_stack_sect->saved_stack_ptr == lo) {
+    /* If the thread has never been stopped since the recent  */
+    /* GC_call_with_gc_active invocation then skip the top    */
+    /* "stack section" as stack_ptr already points to.        */
+    traced_stack_sect = traced_stack_sect->prev;
+  }
+  
+  BDWGC_DEBUG("Pushing stack for thread (%p, tid=%u), range = [%p,%p)\n", t, t->tid, lo, hi);
+      
+  if (0 == lo) panic("GC_push_all_stacks: sp not set!");
+  GC_push_all_stack_sections(lo, hi, traced_stack_sect);
+
+  
+  //# ifdef STACK_GROWS_UP
+  //total_size += lo - hi;
+  //# else
+  total_size += hi - lo; /* lo <= hi */
+  //# endif
+      
+}
+
+/* We hold allocation lock.  Should do exactly the right thing if the   */
+/* world is stopped.  Should not fail if it isn't.                      */
+GC_INNER void GC_push_all_stacks(void)
+{
+  nk_sched_dump_threads(0);
+
+  BDWGC_DEBUG("Pushing stacks from thread %p\n", get_cur_thread());
+  nk_sched_map_threads(0, push_thread_stack);
+  
+  
+  /* if (!found_me && !GC_in_thread_creation) */
+  /*   panic("Collecting from unknown thread"); */
+  /* GC_total_stacksize = total_size; */
+}
+
+
+/* Caller holds allocation lock, and has held it continuously since     */
+/* the world stopped.                                                   */
+GC_INNER void GC_start_world(void)
+{
+# ifdef NAUT
+
+  BDWGC_DEBUG("Starting the world from %p\n", get_cur_thread());
+ 
+
+# else
+  
+# ifndef NACL
+    pthread_t self = pthread_self();
+    register int i;
+    register GC_thread p;
+#   ifndef GC_OPENBSD_THREADS
+      register int n_live_threads = 0;
+      register int result;
+#   endif
+#   ifdef GC_NETBSD_THREADS_WORKAROUND
+      int code;
+#   endif
+
+#   ifdef DEBUG_THREADS
+      GC_log_printf("World starting\n");
+#   endif
+
+#   ifndef GC_OPENBSD_THREADS
+      AO_store(&GC_world_is_stopped, FALSE);
+#   endif
+    for (i = 0; i < THREAD_TABLE_SZ; i++) {
+      for (p = GC_threads[i]; p != 0; p = p -> next) {
+        if (!THREAD_EQUAL(p -> id, self)) {
+            if (p -> flags & FINISHED) continue;
+            if (p -> thread_blocked) continue;
+#           ifndef GC_OPENBSD_THREADS
+              n_live_threads++;
+#           endif
+#           ifdef DEBUG_THREADS
+              GC_log_printf("Sending restart signal to 0x%x\n",
+                            (unsigned)(p -> id));
+#           endif
+
+#         ifdef GC_OPENBSD_THREADS
+            if (pthread_resume_np(p -> id) != 0)
+              ABORT("pthread_resume_np failed");
+#         else
+#           ifndef PLATFORM_ANDROID
+              result = pthread_kill(p -> id, SIG_THR_RESTART);
+#           else
+              result = android_thread_kill(p -> kernel_id, SIG_THR_RESTART);
+#           endif
+            switch(result) {
+                case ESRCH:
+                    /* Not really there anymore.  Possible? */
+                    n_live_threads--;
+                    break;
+                case 0:
+                    break;
+                default:
+                    ABORT("pthread_kill failed");
+            }
+#         endif
+        }
+      }
+    }
+#   ifdef GC_NETBSD_THREADS_WORKAROUND
+      for (i = 0; i < n_live_threads; i++) {
+        while (0 != (code = sem_wait(&GC_restart_ack_sem))) {
+          if (errno != EINTR) {
+            if (GC_print_stats)
+              GC_log_printf("sem_wait() returned %d\n", code);
+            ABORT("sem_wait() for restart handler failed");
+          }
+        }
+      }
+#   endif
+#   ifdef DEBUG_THREADS
+      GC_log_printf("World started\n");
+#   endif
+# else /* NACL */
+#   ifdef DEBUG_THREADS
+      GC_log_printf("World starting...\n");
+#   endif
+    GC_nacl_park_threads_now = 0;
+# endif
+
+# endif // !NAUT
+}
+
+
+GC_INNER void GC_stop_init(void)
+{
+
+  BDWGC_DEBUG("GC_stop_init ... does nothing..\n");
+  
+/* # if !defined(GC_OPENBSD_THREADS) && !defined(NACL) */
+/*     struct sigaction act; */
+
+/*     if (sem_init(&GC_suspend_ack_sem, GC_SEM_INIT_PSHARED, 0) != 0) */
+/*         ABORT("sem_init failed"); */
+/* #   ifdef GC_NETBSD_THREADS_WORKAROUND */
+/*       if (sem_init(&GC_restart_ack_sem, GC_SEM_INIT_PSHARED, 0) != 0) */
+/*         ABORT("sem_init failed"); */
+/* #   endif */
+
+/* #   ifdef SA_RESTART */
+/*       act.sa_flags = SA_RESTART */
+/* #   else */
+/*       act.sa_flags = 0 */
+/* #   endif */
+/* #   ifdef SA_SIGINFO */
+/*                      | SA_SIGINFO */
+/* #   endif */
+/*         ; */
+/*     if (sigfillset(&act.sa_mask) != 0) { */
+/*         ABORT("sigfillset() failed"); */
+/*     } */
+/* #   ifdef GC_RTEMS_PTHREADS */
+/*       if(sigprocmask(SIG_UNBLOCK, &act.sa_mask, NULL) != 0) { */
+/*         ABORT("rtems sigprocmask() failed"); */
+/*       } */
+/* #   endif */
+/*     GC_remove_allowed_signals(&act.sa_mask); */
+/*     /\* SIG_THR_RESTART is set in the resulting mask.            *\/ */
+/*     /\* It is unmasked by the handler when necessary.            *\/ */
+/* #   ifdef SA_SIGINFO */
+/*       act.sa_sigaction = GC_suspend_handler; */
+/* #   else */
+/*       act.sa_handler = GC_suspend_handler; */
+/* #   endif */
+/*     if (sigaction(SIG_SUSPEND, &act, NULL) != 0) { */
+/*         ABORT("Cannot set SIG_SUSPEND handler"); */
+/*     } */
+
+/* #   ifdef SA_SIGINFO */
+/*       act.sa_flags &= ~ SA_SIGINFO; */
+/* #   endif */
+/*     act.sa_handler = GC_restart_handler; */
+/*     if (sigaction(SIG_THR_RESTART, &act, NULL) != 0) { */
+/*         ABORT("Cannot set SIG_THR_RESTART handler"); */
+/*     } */
+
+/*     /\* Initialize suspend_handler_mask. It excludes SIG_THR_RESTART. *\/ */
+/*     if (sigfillset(&suspend_handler_mask) != 0) ABORT("sigfillset() failed"); */
+/*     GC_remove_allowed_signals(&suspend_handler_mask); */
+/*     if (sigdelset(&suspend_handler_mask, SIG_THR_RESTART) != 0) */
+/*         ABORT("sigdelset() failed"); */
+
+/*     /\* Check for GC_RETRY_SIGNALS.      *\/ */
+/*     if (0 != GETENV("GC_RETRY_SIGNALS")) { */
+/*         GC_retry_signals = TRUE; */
+/*     } */
+/*     if (0 != GETENV("GC_NO_RETRY_SIGNALS")) { */
+/*         GC_retry_signals = FALSE; */
+/*     } */
+/*     if (GC_print_stats && GC_retry_signals) { */
+/*       GC_log_printf("Will retry suspend signal if necessary\n"); */
+/*     } */
+/* # endif /\* !GC_OPENBSD_THREADS && !NACL *\/ */
+
+
+}
+
+#endif // NAUT_THREADS
+
+
 
 #if defined(GC_PTHREADS) && !defined(GC_WIN32_THREADS) && \
     !defined(GC_DARWIN_THREADS)
@@ -314,6 +636,11 @@ STATIC void GC_restart_handler(int sig)
 /* world is stopped.  Should not fail if it isn't.                      */
 GC_INNER void GC_push_all_stacks(void)
 {
+
+#   ifdef NAUT
+
+#   else
+  
     GC_bool found_me = FALSE;
     size_t nthreads = 0;
     int i;
@@ -399,6 +726,8 @@ GC_INNER void GC_push_all_stacks(void)
     if (!found_me && !GC_in_thread_creation)
       ABORT("Collecting from unknown thread");
     GC_total_stacksize = total_size;
+
+#   endif //!NAUT
 }
 
 #ifdef DEBUG_THREADS
@@ -537,6 +866,17 @@ STATIC int GC_suspend_all(void)
 
 GC_INNER void GC_stop_world(void)
 {
+# ifdef NAUT
+  int i;
+  int n_live_threads;
+  int code;
+  printk("Stoping the world!");
+  
+  //GC_log_printf("Stopping the world from 0x%x\n", (unsigned)pthread_self());
+
+
+# else
+
 # if !defined(GC_OPENBSD_THREADS) && !defined(NACL)
     int i;
     int n_live_threads;
@@ -616,6 +956,8 @@ GC_INNER void GC_stop_world(void)
     GC_log_printf("World stopped from 0x%x\n", (unsigned)pthread_self());
     GC_stopping_thread = 0;
 # endif
+
+# endif // !NAUT
 }
 
 #ifdef NACL
@@ -745,6 +1087,16 @@ GC_INNER void GC_stop_world(void)
 /* the world stopped.                                                   */
 GC_INNER void GC_start_world(void)
 {
+# ifdef NAUT
+
+  printk("Stoping the world!");
+
+
+
+ 
+
+# else
+  
 # ifndef NACL
     pthread_t self = pthread_self();
     register int i;
@@ -820,6 +1172,8 @@ GC_INNER void GC_start_world(void)
 #   endif
     GC_nacl_park_threads_now = 0;
 # endif
+
+# endif // !NAUT
 }
 
 GC_INNER void GC_stop_init(void)

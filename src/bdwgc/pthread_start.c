@@ -36,34 +36,19 @@
 
 #include "private/pthread_support.h"
 
-#if defined(GC_PTHREADS) && !defined(GC_WIN32_THREADS)
-
-#include <pthread.h>
-#include <sched.h>
-
 /* Invoked from GC_start_routine(). */
-void * GC_CALLBACK GC_inner_start_routine(struct GC_stack_base *sb, void *arg)
-{
-  void * (*start)(void *);
-  void * start_arg;
-  void * result;
-  volatile GC_thread me =
-                GC_start_rtn_prepare_thread(&start, &start_arg, sb, arg);
+/* void * GC_CALLBACK GC_inner_start_routine(struct GC_stack_base *sb, void *arg) */
+/* { */
+/*   printk("THIS SHOULD NOT BE PRINTED\n"); */
+/*   void * (*start)(void *); */
+/*   void * start_arg; */
+/*   void * result; */
+/*   volatile GC_thread me = GC_start_rtn_prepare_thread(&start, &start_arg, sb, arg); */
 
-# ifndef NACL
-    pthread_cleanup_push(GC_thread_exit_proc, me);
-# endif
-  result = (*start)(start_arg);
-# ifdef DEBUG_THREADS
-    GC_log_printf("Finishing thread 0x%x\n", (unsigned)pthread_self());
-# endif
-  me -> status = result;
-# ifndef NACL
-    pthread_cleanup_pop(1);
-    /* Cleanup acquires lock, ensuring that we can't exit while         */
-    /* a collection that thinks we're alive is trying to stop us.       */
-# endif
-  return result;
-}
+/*   //  result = (*start)(start_arg); */
 
-#endif /* GC_PTHREADS */
+/*   BDWGC_DEBUG("Finishing thread %p\n", get_cur_thread()); */
+/*     //  me -> status = result; */
+/*   return result; */
+/* } */
+

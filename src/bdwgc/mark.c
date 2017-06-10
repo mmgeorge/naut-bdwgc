@@ -1304,6 +1304,7 @@ GC_INNER void GC_mark_init(void)
  */
 void GC_push_all(ptr_t bottom, ptr_t top)
 {
+
     register word length;
 
     bottom = (ptr_t)(((word) bottom + ALIGNMENT-1) & ~(ALIGNMENT-1));
@@ -1311,6 +1312,8 @@ void GC_push_all(ptr_t bottom, ptr_t top)
     if (bottom >= top) return;
 
     GC_mark_stack_top++;
+
+    BDWGC_DEBUG("GC_push_all: mark_stack_top = %d\n", GC_mark_stack_top);
     if (GC_mark_stack_top >= GC_mark_stack_limit) {
         ABORT("Unexpected mark stack overflow");
     }

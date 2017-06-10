@@ -283,7 +283,6 @@ GC_API void GC_CALL GC_generic_malloc_many(size_t lb, int k, void **result)
     struct obj_kind * ok = &(GC_obj_kinds[k]);
     struct hblk ** rlh;
     DCL_LOCK_STATE;
-
     GC_ASSERT(lb != 0 && (lb & (GRANULE_BYTES-1)) == 0);
     if (!SMALL_OBJ(lb)) {
         op = GC_generic_malloc(lb, k);
@@ -422,7 +421,6 @@ GC_API void GC_CALL GC_generic_malloc_many(size_t lb, int k, void **result)
           goto out;
         }
     }
-
     /* As a last attempt, try allocating a single object.  Note that    */
     /* this may trigger a collection or expand the heap.                */
       op = GC_generic_malloc_inner(lb, k);

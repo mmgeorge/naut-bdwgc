@@ -161,6 +161,14 @@ config MAX_THREADS
     help
       Maximum number of threads in system (or any core) at once
 
+
+config ENABLE_BDWGC
+    bool "Enable Boehm garbage collector support"
+    default n
+    help
+      Enable Boehm garbage collector 
+
+
 config USE_TICKETLOCKS
     bool "Use Ticket/Bakery locks instead of default spin"
     default n
@@ -605,6 +613,13 @@ config DEBUG_FILESYSTEM
         default n
         help
                 Turn on debug prints for the filesystem interface
+
+config DEBUG_BDWGC
+        bool "Debug Boehm Garbage Collector"
+        depends on DEBUG_PRINTS
+        default n
+        help
+                Turn on debug prints for the Boehm Garbage Collector
 
 endmenu
 

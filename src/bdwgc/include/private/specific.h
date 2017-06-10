@@ -12,8 +12,16 @@
  * by adding a lock.
  */
 
+/* #ifdef NAUT */
+
+/* //# define AO_t int */
+/* //# define pthread_mutex_t int */
+/* //# define GC_approx_sp(void) */
+/* #else  */
 #include <errno.h>
 #include "atomic_ops.h"
+//#endif
+
 
 /* Called during key creation or setspecific.           */
 /* For the GC we already hold lock.                     */

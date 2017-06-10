@@ -2598,7 +2598,7 @@ STATIC void GC_default_push_other_roots(void)
 
 # endif /* PCR */
 
-# if defined(GC_PTHREADS) || defined(GC_WIN32_THREADS)
+# if defined(GC_PTHREADS) || defined(GC_WIN32_THREADS) || defined(NAUT_THREADS)
     STATIC void GC_default_push_other_roots(void)
     {
       GC_push_all_stacks();

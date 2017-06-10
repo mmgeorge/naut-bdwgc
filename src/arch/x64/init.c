@@ -89,26 +89,6 @@
 #include <dev/vesa.h>
 #endif
 
-// BDWGC
-// Experimental support for leak detection
-// Cannot run leak detection with normal garbage collection
-// Does not support threads 
-// #define NAUT_ENABLE_LEAK_DETECTION  
-
-#ifdef NAUT_ENABLE_LEAK_DETECTION
-#ifndef GC_DEBUG
-# define GC_DEBUG
-#endif
-#ifndef FIND_LEAK
-# define FIND_LEAK
-#endif
-#define CHECK_LEAKS() GC_gcollect()
-#include "../../../src/bdwgc/include/gc.h"
-#endif
-
-#include "../../../src/bdwgc/include/test.h"
-
-
 extern spinlock_t printk_lock;
 
 
@@ -344,20 +324,6 @@ init (unsigned long mbd,
 
     nk_sched_init(&sched_cfg);
 
-    #ifdef NAUT_ENABLE_LEAK_DETECTION
-    printk("LEAKDETECT: Initializing leak detector\n");
-    GC_INIT();
-    
-    #undef malloc
-    #define malloc(n) GC_MALLOC(n)
-    #undef calloc
-    #define calloc(m,n) GC_MALLOC((m)*(n))
-    #undef free
-    #define free(p) GC_FREE(p)
-    #undef realloc
-    #define realloc(p,n) GC_REALLOC(p,n)
-    #endif
-
     // we now switch away from the boot-time stack in low memory 
     naut = smp_ap_stack_switch(get_cur_thread()->rsp, get_cur_thread()->rsp, naut);
 
@@ -422,13 +388,6 @@ init (unsigned long mbd,
 
     launch_vmm_environment();
 
-    #ifdef NAUT_ENABLE_LEAK_DETECTION
-        CHECK_LEAKS();
-        bdwgc_test_leak_detector();
-    #else
-        bdwgc_test_gc(); // Cannot run tests in leak detection mode 
-    #endif
-    
     nk_launch_shell("root-shell", 0);
     runtime_init();
 

@@ -357,7 +357,9 @@ nk_thread_create (nk_thread_fun_t fun,
         THREAD_ERROR("Could not initialize thread\n");
         goto out_err;
     }
+    // We know stack now
 
+    
     t->status = NK_THR_INIT;
     
     t->fun = fun;
@@ -431,6 +433,14 @@ nk_thread_start (nk_thread_fun_t fun,
     return nk_thread_run(newthread);
 }
 
+
+//#ifdef NAUT_CONFIG_ENABLE_BDWGC
+
+//nk_tls_key_t GC_thread_key;
+
+//#endif
+
+
 int nk_thread_run(nk_thread_id_t t)
 {
   nk_thread_t * newthread = (nk_thread_t*)t;
@@ -442,6 +452,17 @@ int nk_thread_run(nk_thread_id_t t)
   THREAD_DEBUG("RUN: Current_CPU: %llu\n", newthread->current_cpu);
   
   thread_setup_init_stack(newthread, newthread->fun, newthread->input);
+
+  // GC thread create
+  #ifdef NAUT_CONFIG_ENABLE_BDWGC
+
+  bdwgc_thread_state* state = bdwgc_thread_state_init();
+  newthread->gc_state = state;
+  BDWGC_DEBUG("Starting thread %p (tid %d) with gc_state %p\n", newthread, newthread->tid, state);
+  
+
+  #endif
+  
   
   if (nk_sched_make_runnable(newthread, newthread->current_cpu,1)) { 
       THREAD_ERROR("Scheduler failed to run thread (%p, tid=%u) on cpu %u\n",
@@ -486,7 +507,6 @@ nk_wake_waiters (void)
 
 void nk_yield()
 {
-    //    THREAD_DEBUG("NK YIELD!\n");
     nk_sched_yield();
 }
 
@@ -506,7 +526,7 @@ void
 nk_thread_exit (void * retval) 
 {
     nk_thread_t * me = get_cur_thread();
-
+    
     /* clear any thread local storage that may have been allocated */
     tls_exit();
     
@@ -517,10 +537,12 @@ nk_thread_exit (void * retval)
 
     me->output      = retval;
     me->status      = NK_THR_EXITED;
-
+    cli();
+    
     /* wake up everyone who is waiting on me */
     nk_wake_waiters();
 
+    
     me->refcount--;
 
     THREAD_DEBUG("Thread %p (tid=%u) exiting, joining with children\n", me, me->tid);
@@ -552,7 +574,7 @@ nk_thread_destroy (nk_thread_id_t t)
 
     THREAD_DEBUG("Destroying thread (%p, tid=%lu)\n", (void*)thethread, thethread->tid);
 
-    ASSERT(!irqs_enabled());
+    //    ASSERT(!irqs_enabled());
 
     nk_sched_thread_pre_destroy(thethread);
 
@@ -586,7 +608,7 @@ nk_join (nk_thread_id_t t, void ** retval)
 {
     nk_thread_t *thethread = (nk_thread_t*)t;
     uint8_t flags;
-
+    BDWGC_DEBUG("JOIN: tid = %d", thethread->tid);
     ASSERT(thethread->parent == get_cur_thread());
 
     flags = irq_disable_save();
@@ -600,6 +622,7 @@ nk_join (nk_thread_id_t t, void ** retval)
         goto out;
     } else {
         while (*(volatile int*)&thethread->status != NK_THR_EXITED) {
+            BDWGC_DEBUG("Waiting for thread...\n");
             __sync_lock_release(&thethread->lock);
             cli();
             nk_wait(t);
@@ -801,7 +824,9 @@ nk_thread_queue_wake_all (nk_thread_queue_t * q)
     uint8_t flags;
 
     THREAD_DEBUG("Waking all waiters on thread queue (q=%p)\n", (void*)q);
-
+    BDWGC_DEBUG("Ensuring my status is exited\n");
+    ASSERT(get_cur_thread()->status == NK_THR_EXITED);
+    
     ASSERT(q);
 
     flags = spin_lock_irq_save(&q->lock);

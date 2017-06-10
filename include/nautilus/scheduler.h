@@ -161,6 +161,9 @@ void nk_sched_dump_cores(int cpu);
 // -1 => all CPUs
 void nk_sched_dump_time(int cpu);
 
+// perform func on each rt_thread's underlying nk_thread_t 
+void nk_sched_map_threads(int cpu, void (func)(struct nk_thread *t));
+
 // Invoked by interrupt handler wrapper and other code
 // to cause thread context switches
 // Do not call this unless you know what you are doing

@@ -31,16 +31,16 @@
 #include "gc.h"
 #include "gc_tiny_fl.h"
 
-#if __GNUC__ >= 3
-# define GC_EXPECT(expr, outcome) __builtin_expect(expr,outcome)
-  /* Equivalent to (expr), but predict that usually (expr)==outcome. */
-#else
+/* #if __GNUC__ >= 3 */
+/* # define GC_EXPECT(expr, outcome) __builtin_expect(expr,outcome) */
+/*   /\* Equivalent to (expr), but predict that usually (expr)==outcome. *\/ */
+/* #else */
 # define GC_EXPECT(expr, outcome) (expr)
-#endif /* __GNUC__ */
+//#endif /* __GNUC__ */
 
-#ifndef GC_ASSERT
-# define GC_ASSERT(expr) /* empty */
-#endif
+//#ifndef GC_ASSERT
+//# define GC_ASSERT(expr) /* empty */
+//#endif
 
 /* Store a pointer to a list of newly allocated objects of kind k and   */
 /* size lb in *result.  The caller must make sure that *result is       */

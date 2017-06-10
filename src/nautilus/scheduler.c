@@ -581,6 +581,26 @@ void nk_sched_dump_threads(int cpu)
     GLOBAL_UNLOCK();
 }
 
+
+void nk_sched_map_threads(int cpu, void (func)(struct nk_thread *t))
+{
+    GLOBAL_LOCK_CONF;
+    struct sys_info *sys = per_cpu_get(system);
+    struct apic_dev *apic = sys->cpus[my_cpu_id()]->apic;
+
+    GLOBAL_LOCK();
+
+    rt_node *n = global_sched_state.thread_list->head;
+    while (n != NULL)
+      {
+        func(n->thread->thread);
+        n = n->next;
+      }
+
+    GLOBAL_UNLOCK();
+}
+
+
 struct thread_query {
     uint64_t     tid;
     nk_thread_t *thread;
@@ -657,6 +677,7 @@ void nk_sched_thread_state_deinit(struct nk_thread *thread)
     FREE(thread->sched_state);
     thread->sched_state=0;
 }
+
 
 struct nk_sched_thread_state *nk_sched_thread_state_init(struct nk_thread *thread,
 							 struct nk_sched_constraints *constraints)
@@ -1469,6 +1490,8 @@ static inline void set_interrupt_priority(rt_thread *t)
 //
 struct nk_thread *_sched_need_resched(int have_lock)
 {
+
+
     LOCAL_LOCK_CONF;
 
     INST_SCHED_IN();
@@ -1482,7 +1505,7 @@ struct nk_thread *_sched_need_resched(int have_lock)
     rt_thread *rt_c = c->sched_state;
 
     if (!have_lock) {
-	LOCAL_LOCK(scheduler);
+      LOCAL_LOCK(scheduler);
     }
 
     scheduler->tsc.end_time = now;
@@ -1909,6 +1932,8 @@ struct nk_thread *_sched_need_resched(int have_lock)
 	break;
 	
     default:
+      BDWGC_DEBUG("Found an error in _sched_need_resched with thread %p\n", get_cur_thread());
+
 	ERROR("Unknown current task type %d... just letting it run\n",rt_c->constraints.type);
 	return 0;
 	break;

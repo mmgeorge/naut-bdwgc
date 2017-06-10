@@ -35,7 +35,7 @@ obj-y += allchblk.o \
 	thread_local_alloc.o \
 	typd_mlc.o \
 	pthread_start.o \
-	pthread_support.o \
-	pthread_stop_world.o \
+	naut_threads.o \
+	naut_stop_world.o \
 	libatomic_ops/ \
 	tests/ 

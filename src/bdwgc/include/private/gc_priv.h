@@ -22,6 +22,7 @@
 # include "private/config.h"
 #endif
 
+
 #ifndef GC_BUILD
 # define GC_BUILD
 #endif
@@ -418,7 +419,7 @@ typedef char * ptr_t;   /* A generic pointer to which we can add        */
                                    PCR_allSigsBlocked, \
                                    PCR_waitForever)
 # else
-#   if defined(GC_WIN32_THREADS) || defined(GC_PTHREADS)
+#   if defined(GC_WIN32_THREADS) || defined(GC_PTHREADS) || defined(NAUT_THREADS)
       GC_INNER void GC_stop_world(void);
       GC_INNER void GC_start_world(void);
 #     define STOP_WORLD() GC_stop_world()
@@ -593,7 +594,10 @@ GC_EXTERN GC_warn_proc GC_current_warn_proc;
 /* may be spread out further.                                   */
 #include "../gc_tiny_fl.h"
 #define GRANULE_BYTES GC_GRANULE_BYTES
+
+#ifndef TINY_FREELISTS
 #define TINY_FREELISTS GC_TINY_FREELISTS
+#endif
 
 #define WORDSZ ((word)CPP_WORDSZ)
 #define SIGNB  ((word)1 << (WORDSZ-1))
@@ -1357,6 +1361,7 @@ struct blocking_data {
 };
 
 /* This is used by GC_call_with_gc_active(), GC_push_all_stack_sections(). */
+#ifndef NAUT
 struct GC_traced_stack_sect_s {
   ptr_t saved_stack_ptr;
 # ifdef IA64
@@ -1365,6 +1370,7 @@ struct GC_traced_stack_sect_s {
 # endif
   struct GC_traced_stack_sect_s *prev;
 };
+#endif
 
 #ifdef THREADS
   /* Process all "traced stack sections" - scan entire stack except for */
@@ -2210,9 +2216,9 @@ GC_INNER ptr_t GC_store_debug_info(ptr_t p, word sz, const char *str,
 #ifdef GC_ASSERTIONS
 #  define GC_ASSERT(expr) \
                 if (!(expr)) { \
-                  GC_err_printf("Assertion failure: %s:%d\n", \
-                                __FILE__, __LINE__); \
-                  ABORT("assertion failure"); \
+                  BDWGC_DEBUG("Assertion failure: %s:%d for thread %p \n", \
+                              __FILE__, __LINE__, get_cur_thread());   \
+                  panic("assertion failure"); \
                 }
 #else
 #  define GC_ASSERT(expr)
