@@ -549,7 +549,7 @@ nk_thread_exit (void * retval)
 
     __sync_lock_release(&me->lock);
 
-    cli();
+    //cli();
 
     nk_sched_exit();
 
